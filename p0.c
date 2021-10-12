@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/utsname.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <time.h>
 #include "list.h"
 
@@ -19,7 +21,7 @@ int rec_counter = 0;
 
 struct CMD {
     char *name;
-    void (*pf) (char **);
+    void (*pf) (int, char **);
 };
 
 struct ayuda {
@@ -44,9 +46,9 @@ struct ayuda a[] = {
 };
 
 int chop_input(char *cadena, char *trozos[]);
-void process_input(char *chops[]);
+void process_input(int chop_number, char *chops[]);
 
-void cmd_autores(char *chops[]) {
+void cmd_autores(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         printf("Daniel Ferreiro Villamor: d.ferreiro\n"
         "Martín Azpilcueta Rabuñal: m.azpilcueta\n");
@@ -59,7 +61,7 @@ void cmd_autores(char *chops[]) {
     }
 }
 
-void cmd_pid(char *chops[]) {
+void cmd_pid(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         pid_t pid = getpid();
         printf("Shell pid: %d\n", pid);
@@ -69,14 +71,18 @@ void cmd_pid(char *chops[]) {
     }
 }
 
-void cmd_carpeta(char *chops[]) {
+void curr_dir() {
+    char dir[MAX];
+    if (getcwd(dir, sizeof(dir)) != NULL) {
+        printf("%s\n", dir);
+    } else {
+        perror("Cannot return directory");
+    }    
+}
+
+void cmd_carpeta(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
-        char dir[MAX];
-        if (getcwd(dir, sizeof(dir)) != NULL) {
-            printf("%s\n", dir);
-        } else {
-            perror("Cannot return directory");
-        }
+        curr_dir();
         return;
     }
     if (chdir(chops[0]) == -1) {
@@ -105,7 +111,7 @@ void solo_hora() {
     printf("%s\n",tr[3]);
 }
 
-void cmd_fecha(char *chops[]) {
+void cmd_fecha(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         solo_hora();
         solo_fecha();
@@ -118,7 +124,7 @@ void cmd_fecha(char *chops[]) {
     }
 }
 
-void cmd_hist(char *chops[]) {
+void cmd_hist(int chop_number, char *chops[]) {
     int pos;
 
     if (isEmptyHistory(hist)) return;
@@ -139,9 +145,9 @@ void cmd_hist(char *chops[]) {
     }    
 }
 
-void cmd_comando(char *chops[]) {
+void cmd_comando(int chop_number, char *chops[]) {
     long cmd_number;
-    int cmd_int;
+    int cmd_int, args_number = 0;
     char *remaining, *command, *cmd_chops[MAX/2], command_cpy[MAX];
 
     if (isEmptyHistory(hist)) return;
@@ -168,8 +174,8 @@ void cmd_comando(char *chops[]) {
         strcpy(command_cpy, command);
         printf("Executing hist (%d): %s", cmd_int, command_cpy);
         rec_counter++;
-        chop_input(command_cpy, cmd_chops);
-        process_input(cmd_chops);   
+        args_number = chop_input(command_cpy, cmd_chops);
+        process_input(args_number, cmd_chops);   
         rec_counter = 0;
     }
 }
@@ -184,7 +190,7 @@ void cmd_uname() {
     }
 }
 
-void cmd_ayuda(char *chops[]) {
+void cmd_ayuda(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
         "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear\n");
@@ -206,8 +212,65 @@ void cmd_bye() {
 
 /* Lab Assignment 1 */
 
-void cmd_crear(char *chops[]) {
+char LetraTF(mode_t m) {
+    switch (m & S_IFMT) {
+        /*and bit a bit con los bits de formato,0170000 */
+    case S_IFSOCK:
+        return 's'; /*socket */
+    case S_IFLNK:
+        return 'l'; /*symbolic link*/
+    case S_IFREG:
+        return '-'; /* fichero normal*/
+    case S_IFBLK:
+        return 'b'; /*block device*/
+    case S_IFDIR:
+        return 'd'; /*directorio */
+    case S_IFCHR:
+        return 'c'; /*char  device*/
+    case S_IFIFO:
+        return 'p'; /*pipe*/
+    default:
+        return '?'; /*desconocido, no deberia aparecer*/
+    }
+}
 
+char *ConvierteModo(mode_t m, char * permisos) {
+    strcpy(permisos, "---------- ");
+    permisos[0] = LetraTF(m);
+    if (m & S_IRUSR) permisos[1] = 'r'; /*propietario*/
+    if (m & S_IWUSR) permisos[2] = 'w';
+    if (m & S_IXUSR) permisos[3] = 'x';
+    if (m & S_IRGRP) permisos[4] = 'r'; /*grupo*/
+    if (m & S_IWGRP) permisos[5] = 'w';
+    if (m & S_IXGRP) permisos[6] = 'x';
+    if (m & S_IROTH) permisos[7] = 'r'; /*resto*/
+    if (m & S_IWOTH) permisos[8] = 'w';
+    if (m & S_IXOTH) permisos[9] = 'x';
+    if (m & S_ISUID) permisos[3] = 's'; /*setuid, setgid y stickybit*/
+    if (m & S_ISGID) permisos[6] = 's';
+    if (m & S_ISVTX) permisos[9] = 't';
+    return permisos;
+}
+
+void cmd_crear(int chop_number, char *chops[]) {
+    int fd;
+
+    if (chops[0] == NULL) {
+        curr_dir();
+        return;
+    } else {
+        if (strcmp(chops[0], "-f") == 0) {
+            if ((fd = open(chops[1], O_CREAT | O_EXCL, 0644)) == -1) {
+                perror("Cannot create file");
+                return;
+            } else close(fd);
+        } else if (strcmp(chops[0], "-f") != 0) {
+            if ((mkdir(chops[0], S_IRUSR | S_IWUSR | S_IXUSR) == -1)) {
+                perror("Cannot create directory");
+                return;
+            }
+        }
+    } 
 }
 
 struct CMD c[] = {
@@ -233,10 +296,10 @@ int chop_input(char *cadena, char *trozos[]) {
     return i;
 }
 
-void process_input(char *chops[]) {
+void process_input(int chop_number, char *chops[]) {
     for (int i = 0; c[i].name != NULL; i++) {
         if(strcmp(chops[0], c[i].name) == 0) {
-            (*c[i].pf)(chops + 1);
+            (*c[i].pf)(chop_number - 1, chops + 1);
             return;
         }
     }
@@ -246,6 +309,7 @@ void process_input(char *chops[]) {
 int main() {
     char user_input[MAX];
     char *chops[MAX/2];
+    int chop_number = 0;
 
     createEmptyHistory(&hist);
     while (1) {
@@ -253,8 +317,8 @@ int main() {
         fgets(user_input, MAX, stdin);
         if (user_input[0] != '\n') {
             insertHistory(user_input, &hist);
-            chop_input(user_input, chops);
-            process_input(chops);
+            chop_number = chop_input(user_input, chops);
+            process_input(chop_number, chops);
         }
     }
 
