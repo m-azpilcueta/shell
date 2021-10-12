@@ -265,7 +265,7 @@ void cmd_crear(int chop_number, char *chops[]) {
                 return;
             } else close(fd);
         } else if (strcmp(chops[0], "-f") != 0) {
-            if ((mkdir(chops[0], S_IRUSR | S_IWUSR | S_IXUSR) == -1)) {
+            if ((mkdir(chops[0], 0644) == -1)) {
                 perror("Cannot create directory");
                 return;
             }
