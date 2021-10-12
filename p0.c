@@ -39,6 +39,7 @@ struct ayuda a[] = {
     {"fin", "fin 	Terminates the shell execution"},
     {"salir", "salir 	Terminates the shell execution"},
     {"bye", "bye 	Terminates the shell execution"},
+    {"crear", "crear [-f] [name]    Creates a file or a directory"},
     {NULL, NULL}
 };
 
@@ -186,7 +187,7 @@ void cmd_uname() {
 void cmd_ayuda(char *chops[]) {
     if (chops[0] == NULL) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
-        "fin salir bye fecha pid autores hist comando carpeta infosis ayuda\n");
+        "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear\n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -203,6 +204,12 @@ void cmd_bye() {
     exit(0);
 }
 
+/* Lab Assignment 1 */
+
+void cmd_crear(char *chops[]) {
+
+}
+
 struct CMD c[] = {
     {"autores", cmd_autores},
     {"pid", cmd_pid},
@@ -215,6 +222,7 @@ struct CMD c[] = {
     {"fin", cmd_bye},
     {"salir", cmd_bye},
     {"bye", cmd_bye},
+    {"crear", cmd_crear},
     {NULL, NULL}
 };
 
