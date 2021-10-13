@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+#include <dirent.h>
 #include "list.h"
 
 #define MAX 1024
@@ -42,7 +43,8 @@ struct ayuda a[] = {
     {"salir", "salir 	Terminates the shell execution"},
     {"bye", "bye 	Terminates the shell execution"},
     {"crear", "crear [-f] [name]    Creates a file or a directory"},
-    {"borrarrec", "borrarrec [name1 name2 ..]   Delete non empty files or directories"},
+    {"borrar", "borrar [name1 name2 ..]    Delete files or empty directories"},
+    {"borrarrec", "borrarrec [name1 name2 ..]   Delete files or non empty directories"},
     {NULL, NULL}
 };
 
@@ -274,28 +276,55 @@ void cmd_crear(int chop_number, char *chops[]) {
     } 
 }
 
-void delete(char *tr){
+void delete(char *tr, int rec){
     struct stat pt;
+    DIR *dir;
+    struct dirent *entry;
+    char todo[MAX] = "";
 
-    lstat(tr, & pt);
-    if (!((pt.st_mode & S_IFMT) == S_IFDIR)) {
-        if (unlink(tr)) {
-            perror("Cannot delete file");
+    if (lstat(tr, &pt) == -1) {
+        perror("Cannot delete");
+        return;
+    } else {
+        if (!((pt.st_mode & S_IFMT) == S_IFDIR)) {
+            if (unlink(tr) == -1) {
+                perror("Cannot delete file");
+            }
+            return;
+        } else {
+            if (rec) {
+                dir = opendir(tr);
+                strcpy(todo, tr);
+                while((entry = readdir(dir)) != NULL) {
+                    if (entry -> d_name[0] == '.') continue;
+                    strcpy(todo, tr);
+                    strcat(todo, "/");
+                    strcat(todo, entry->d_name);
+                    delete(todo, 1);
+                }
+                closedir(dir);
+                delete(tr, 0);
+            } else {
+                if (rmdir(tr) == -1) {
+                    perror("Cannot delete directory");
+                    return;
+                }
+            }
         }
-        return;
     }
-    if (rmdir(tr)==-1) {
-        perror("Cannot delete directory");
-        return;
-    }
-    return;
-} 
+}
 
-void cmd_borrar(int t, char * tr[]){
+void cmd_borrar(int chop_number, char * chops[]){
     int i = 0;
-    while (tr[i] != NULL){
-        delete(tr[i]);
-        i++;
+
+    if (chops[0] == NULL) {
+        curr_dir();
+        return;
+    } else {
+        while (chops[i] != NULL){
+            delete(chops[i], 0);
+            i++;
+        }
     }
 }
 
@@ -307,7 +336,7 @@ void cmd_borrarrec(int chop_number, char *chops[]) {
         return;
     } else {
         while (chops[it] != NULL) {
-            
+            delete(chops[it], 1);
             it++;
         }    
     }
