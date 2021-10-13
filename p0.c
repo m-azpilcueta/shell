@@ -193,7 +193,7 @@ void cmd_uname() {
 void cmd_ayuda(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
-        "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear\n");
+        "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar\n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -260,18 +260,44 @@ void cmd_crear(int chop_number, char *chops[]) {
         return;
     } else {
         if (strcmp(chops[0], "-f") == 0) {
-            if ((fd = open(chops[1], O_CREAT | O_EXCL, 0644)) == -1) {
+            if ((fd = open(chops[1], O_CREAT | O_EXCL, 0744)) == -1) {
                 perror("Cannot create file");
                 return;
             } else close(fd);
         } else if (strcmp(chops[0], "-f") != 0) {
-            if ((mkdir(chops[0], 0644) == -1)) {
+            if ((mkdir(chops[0], 0744) == -1)) {
                 perror("Cannot create directory");
                 return;
             }
         }
     } 
 }
+
+void delete(char *tr){
+    struct stat pt;
+
+    lstat(tr, & pt);
+    if (!((pt.st_mode & S_IFMT) == S_IFDIR)) {
+        if (unlink(tr)) {
+            perror("Cannot delete file");
+        }
+        return;
+    }
+    if (rmdir(tr)==-1) {
+        perror("Cannot delete directory");
+        return;
+    }
+    return;
+} 
+
+void cmd_borrar(int t, char * tr[]){
+    int i = 0;
+    while (tr[i] != NULL){
+        delete(tr[i]);
+        i++;
+    }
+}
+
 
 struct CMD c[] = {
     {"autores", cmd_autores},
@@ -286,6 +312,7 @@ struct CMD c[] = {
     {"salir", cmd_bye},
     {"bye", cmd_bye},
     {"crear", cmd_crear},
+    {"borrar", cmd_borrar},
     {NULL, NULL}
 };
 
