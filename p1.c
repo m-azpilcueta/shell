@@ -360,7 +360,7 @@ char *get_info(char *data, int link, int acc, char *path) {
         strftime(data, sizeof(builder), "%Y/%m/%d-%H:%M ", localtime(&modif_time));
         sprintf(builder, "%d ", (int) pt.st_nlink);
         strcat(data, builder);
-        sprintf(builder, "%ld ", (unsigned long) pt.st_ino);
+        sprintf(builder, "(%ld) ", (unsigned long) pt.st_ino);
 		strcat(data,builder);
         passwd = getpwuid(pt.st_uid);
 		sprintf(builder, "%s ", passwd->pw_name);
