@@ -13,6 +13,8 @@
 #include <fcntl.h>
 #include <time.h>
 #include <dirent.h>
+#include <pwd.h>
+#include <grp.h>
 #include "list.h"
 
 #define MAX 1024
@@ -343,8 +345,99 @@ void cmd_borrarrec(int chop_number, char *chops[]) {
     }
 }
 
+char *get_info(char *data, int link, int acc, char *path) {
+    struct stat pt;
+    time_t modif_time;
+    struct passwd *passwd;
+    struct group *group;
+    char builder[MAX];
+
+    if (lstat(path, &pt) == -1) {
+        perror("Cannot stat");
+    } else {
+        if (acc) modif_time = pt.st_atime;
+        else modif_time = pt.st_mtime;
+        strftime(data, sizeof(builder), "%Y/%m/%d-%H:%M ", localtime(&modif_time));
+        sprintf(builder, "%d ", (int) pt.st_nlink);
+        strcat(data, builder);
+        sprintf(builder, "%ld ", (unsigned long) pt.st_ino);
+		strcat(data,builder);
+        passwd = getpwuid(pt.st_uid);
+		sprintf(builder, "%s ", passwd->pw_name);
+		strcat(data, builder);
+        group = getgrgid(pt.st_gid);
+		sprintf(builder, "%s ", group->gr_name);
+		strcat(data, builder);
+        sprintf(builder, "%s ", ConvierteModo(pt.st_mode, builder));
+		strcat(data, builder);
+        sprintf(builder, "%d ", (signed int) pt.st_size);
+		strcat(data, builder);
+        strcat(data, strrchr(path, '/') + 1);
+        if (S_ISLNK (pt.st_mode) && link){
+            readlink(path, builder, pt.st_size);
+            builder[pt.st_size] = '\0';
+            strcat(data, "->");
+            strcat(data, builder);
+        }
+    }
+    return data;
+}
+
+void listar(int longL, int link, int acc, char *path) {
+    struct stat pt;
+    char data[MAX];
+
+    if (lstat(path, &pt) == -1) {
+        perror("Cannot stat");
+        return;
+    } else {
+        if (longL) {
+            printf("%s\n", get_info(data, link, acc, path)); 
+        } else {
+            sprintf(data, "%d ", (signed int) pt.st_size);
+            strcat(data, strrchr(path, '/') + 1);
+            printf("%s\n", data);
+        }
+    } 
+}
+
 void cmd_listfich(int chop_number, char *chops[]){
-    
+    int longL = 0, link = 0, acc = 0, flags = 0;
+    char path[MAX];
+
+    if (chops[0] == NULL) {
+        curr_dir();
+        return;
+    } else {
+        for (int i = 0; chops[i] != NULL; i++) {
+            if (strcmp(chops[i], "-long") == 0){
+                longL = 1;
+                flags++;
+            } else if (strcmp(chops[i], "-link") == 0) {
+                link = 1;
+                flags++;
+            } else if (strcmp(chops[i], "-acc") == 0) {
+                acc = 1;
+                flags++;
+            } else break;
+        }
+
+        if (flags == chop_number) {
+            curr_dir();
+            return;
+        }
+
+        for (int i = flags; i < chop_number; i++) {
+            strcpy(path, chops[i]);
+            if (strncmp(chops[i], "/", 1) != 0 && strncmp(chops[i], "./", 2) != 0 && strncmp(chops[i], "../", 3) != 0) {
+                strcpy(path, "./");
+                strcat(path, chops[i]);
+            } else {
+                strcpy(path, chops[i]);
+            }
+            listar(longL, link, acc, path);
+        }
+    }
 }
 
 struct CMD c[] = {
