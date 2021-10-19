@@ -48,6 +48,7 @@ struct ayuda a[] = {
     {"borrar", "borrar [name1 name2 ..]    Delete files or empty directories"},
     {"borrarrec", "borrarrec [name1 name2 ..]   Delete files or non empty directories"},
     {"listfich", "listfich [-long][-link][-acc] n1 n2 ..	List files"},
+    {"listdir", "listdir [-reca] [-recb] [-hid][-long][-link][-acc] n1 n2 ..	List files inside directories"},
     {NULL, NULL}
 };
 
@@ -199,7 +200,8 @@ void cmd_uname() {
 void cmd_ayuda(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
-        "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich\n");
+        "fin salir bye fecha pid autores hist comando carpeta infosis ayuda " 
+        "crear borrar borrarrec listfich listdir\n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -401,7 +403,7 @@ void listar(int longL, int link, int acc, char *path) {
     } 
 }
 
-void cmd_listfich(int chop_number, char *chops[]){
+void cmd_listfich(int chop_number, char *chops[]) {
     int longL = 0, link = 0, acc = 0, flags = 0;
     char path[MAX];
 
@@ -440,6 +442,10 @@ void cmd_listfich(int chop_number, char *chops[]){
     }
 }
 
+void cmd_listdir(int chop_number, char *chops[]) {
+    
+}
+
 struct CMD c[] = {
     {"autores", cmd_autores},
     {"pid", cmd_pid},
@@ -456,6 +462,7 @@ struct CMD c[] = {
     {"borrar", cmd_borrar},
     {"borrarrec", cmd_borrarrec},
     {"listfich", cmd_listfich},
+    {"listdir", cmd_listdir},
     {NULL, NULL}
 };
 
