@@ -15,6 +15,7 @@
 #include <dirent.h>
 #include <pwd.h>
 #include <grp.h>
+#include <errno.h>
 #include "list.h"
 
 #define MAX 1024
@@ -372,7 +373,7 @@ char *get_info(char *data, int link, int acc, char *path) {
 		strcat(data, builder);
         sprintf(builder, "%s ", ConvierteModo(pt.st_mode, builder));
 		strcat(data, builder);
-        sprintf(builder, "%d ", (signed int) pt.st_size);
+        sprintf(builder, "%9d ", (signed int) pt.st_size);
 		strcat(data, builder);
         strcat(data, strrchr(path, '/') + 1);
         if (S_ISLNK (pt.st_mode) && link){
@@ -396,9 +397,73 @@ void listar(int longL, int link, int acc, char *path) {
         if (longL) {
             printf("%s\n", get_info(data, link, acc, path)); 
         } else {
-            sprintf(data, "%d ", (signed int) pt.st_size);
+            sprintf(data, "%9d ", (signed int) pt.st_size);
             strcat(data, strrchr(path, '/') + 1);
             printf("%s\n", data);
+        }
+    } 
+}
+
+void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char *path);
+
+void do_recursive(DIR *dir, int longL, int link, int acc, int hid, int recb, int reca, char *path) {
+    struct dirent *content;
+    char it[MAX];
+    struct stat pt;
+
+    while ((content = readdir(dir)) != NULL) {
+        if((strcmp(content->d_name, ".") == 0) || (strcmp(content->d_name, "..") == 0)) continue;
+        strcpy(it, path);
+        strcat(it, "/");
+        strcat(it, content->d_name);
+        if (lstat(it, &pt) == -1) {
+            printf("Cannot stat %s: %s\n", it, strerror(errno));
+            continue;
+        }
+        else {
+            if ((content->d_name[0] != '.' || hid) && (S_ISDIR(pt.st_mode))) {
+                listar_dir(longL, link, acc, hid, recb, reca, it);
+            }   
+        }
+    }        
+}
+
+void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char *path) {
+    struct stat pt;
+    char it[MAX];
+    DIR *dir;
+    struct dirent *content;
+
+    if (lstat(path, &pt) == -1) {
+        printf("Cannot stat %s: %s\n", path, strerror(errno));
+        return;
+    } else {
+        if (S_ISDIR(pt.st_mode)) {
+            if ((dir = opendir(path)) == NULL) {
+                printf("Cannot open dir '%s': %s\n", path, strerror(errno));
+                return;
+            } else {
+                if (recb) {
+                    do_recursive(dir, longL, link, acc, hid, recb, reca, path);
+                    rewinddir(dir);
+                }
+                printf("----- DIR ----- %s\n", path);
+                while ((content = readdir(dir)) != NULL) {
+                    if (content->d_name[0] != '.' || hid) {
+                        strcpy(it, path);
+                        strcat(it, "/");
+                        strcat(it, content->d_name);
+                        listar(longL, link, acc, it);
+                    }   
+                }
+                if (reca) {
+                    rewinddir(dir);
+                    do_recursive(dir, longL, link, acc, hid, recb, reca, path);
+                }
+                closedir(dir);
+            }
+        } else {
+            listar(longL, link, acc, path);
         }
     } 
 }
@@ -443,7 +508,53 @@ void cmd_listfich(int chop_number, char *chops[]) {
 }
 
 void cmd_listdir(int chop_number, char *chops[]) {
-    
+    int longL = 0, link = 0, acc = 0, flags = 0, hid = 0, reca = 0, recb = 0;
+    char path[MAX];
+
+    if (chops[0] == NULL) {
+        curr_dir();
+        return;
+    } else {
+        for (int i = 0; chops[i] != NULL; i++) {
+            if (strcmp(chops[i], "-long") == 0){
+                longL = 1;
+                flags++;
+            } else if (strcmp(chops[i], "-link") == 0) {
+                link = 1;
+                flags++;
+            } else if (strcmp(chops[i], "-acc") == 0) {
+                acc = 1;
+                flags++;
+            } else if (strcmp(chops[i], "-hid") == 0) {
+                hid = 1;
+                flags++;
+            } else if (strcmp(chops[i], "-reca") == 0) {
+                if (recb == 1) recb = 0;
+                reca = 1;
+                flags++;
+            } else if (strcmp(chops[i], "-recb") == 0) {
+                if (reca == 1) reca = 0;
+                recb = 1;
+                flags++;
+            } else break;
+        }
+
+        if (flags == chop_number) {
+            curr_dir();
+            return;
+        }
+
+        for (int i = flags; i < chop_number; i++) {
+            strcpy(path, chops[i]);
+            if (strncmp(chops[i], "/", 1) != 0 && strncmp(chops[i], "./", 2) != 0 && strncmp(chops[i], "../", 3) != 0) {
+                strcpy(path, "./");
+                strcat(path, chops[i]);
+            } else {
+                strcpy(path, chops[i]);
+            }
+            listar_dir(longL, link, acc, hid, recb, reca, path);
+        }
+    }
 }
 
 struct CMD c[] = {
