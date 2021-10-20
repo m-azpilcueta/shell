@@ -391,7 +391,7 @@ void listar(int longL, int link, int acc, char *path) {
     char data[MAX];
 
     if (lstat(path, &pt) == -1) {
-        perror("Cannot stat");
+        printf("Cannot stat '%s': %s\n", path, strerror(errno));
         return;
     } else {
         if (longL) {
