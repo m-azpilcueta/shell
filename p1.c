@@ -414,7 +414,7 @@ void do_recursive(DIR *dir, int longL, int link, int acc, int hid, int recb, int
     while ((content = readdir(dir)) != NULL) {
         if((strcmp(content->d_name, ".") == 0) || (strcmp(content->d_name, "..") == 0)) continue;
         strcpy(it, path);
-        strcat(it, "/");
+        if (it[strlen(it) - 1] != '/') strcat(it, "/");
         strcat(it, content->d_name);
         if (lstat(it, &pt) == -1) {
             printf("Cannot stat %s: %s\n", it, strerror(errno));
@@ -451,7 +451,7 @@ void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char 
                 while ((content = readdir(dir)) != NULL) {
                     if (content->d_name[0] != '.' || hid) {
                         strcpy(it, path);
-                        strcat(it, "/");
+                        if (it[strlen(it) - 1] != '/') strcat(it, "/");
                         strcat(it, content->d_name);
                         listar(longL, link, acc, it);
                     }   
