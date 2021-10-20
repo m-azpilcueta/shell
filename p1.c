@@ -348,63 +348,58 @@ void cmd_borrarrec(int chop_number, char *chops[]) {
     }
 }
 
-char *get_info(char *data, int link, int acc, char *path) {
-    struct stat pt;
+char *get_info(struct stat pt, char *data, int link, int acc, char *path) {
     time_t modif_time;
     struct passwd *passwd;
     struct group *group;
     char builder[MAX];
 
-    if (lstat(path, &pt) == -1) {
-        printf("Cannot stat '%s': %s\n", path, strerror(errno));
-    } else {
-        if (acc) modif_time = pt.st_atime;
-        else modif_time = pt.st_mtime;
-        strftime(data, sizeof(builder), "%Y/%m/%d-%H:%M ", localtime(&modif_time));
-        sprintf(builder, "%d ", (int) pt.st_nlink);
+    if (acc) modif_time = pt.st_atime;
+    else modif_time = pt.st_mtime;
+    strftime(data, sizeof(builder), "%Y/%m/%d-%H:%M ", localtime(&modif_time));
+    sprintf(builder, "%3d ", (int) pt.st_nlink);
+    strcat(data, builder);
+    sprintf(builder, "(%8ld) ", (unsigned long) pt.st_ino);
+    strcat(data,builder);
+    passwd = getpwuid(pt.st_uid);
+    sprintf(builder, "%16s ", passwd->pw_name);
+    strcat(data, builder);
+    group = getgrgid(pt.st_gid);
+    sprintf(builder, "%16s ", group->gr_name);
+    strcat(data, builder);
+    sprintf(builder, "%10s ", ConvierteModo(pt.st_mode, builder));
+    strcat(data, builder);
+    sprintf(builder, "%9d ", (signed int) pt.st_size);
+    strcat(data, builder);
+    strcat(data, path);
+    if (S_ISLNK (pt.st_mode) && link){
+        readlink(path, builder, pt.st_size);
+        builder[pt.st_size] = '\0';
+        strcat(data, "->");
         strcat(data, builder);
-        sprintf(builder, "(%ld) ", (unsigned long) pt.st_ino);
-		strcat(data,builder);
-        passwd = getpwuid(pt.st_uid);
-		sprintf(builder, "%s ", passwd->pw_name);
-		strcat(data, builder);
-        group = getgrgid(pt.st_gid);
-		sprintf(builder, "%s ", group->gr_name);
-		strcat(data, builder);
-        sprintf(builder, "%s ", ConvierteModo(pt.st_mode, builder));
-		strcat(data, builder);
-        sprintf(builder, "%d ", (signed int) pt.st_size);
-		strcat(data, builder);
-        strcat(data, strrchr(path, '/') + 1);
-        if (S_ISLNK (pt.st_mode) && link){
-            readlink(path, builder, pt.st_size);
-            builder[pt.st_size] = '\0';
-            strcat(data, "->");
-            strcat(data, builder);
-        }
     }
     return data;
 }
 
-void listar(int longL, int link, int acc, char *path) {
-    struct stat pt;
+void listar(struct stat pt, int longL, int link, int acc, char *path) {
     char data[MAX];
 
-    if (lstat(path, &pt) == -1) {
-        printf("Cannot stat '%s': %s\n", path, strerror(errno));
-        return;
+    if (longL) {
+        printf("%s\n", get_info(pt, data, link, acc, path)); 
     } else {
-        if (longL) {
-            printf("%s\n", get_info(data, link, acc, path)); 
-        } else {
-            sprintf(data, "%d ", (signed int) pt.st_size);
-            strcat(data, strrchr(path, '/') + 1);
-            printf("%s\n", data);
-        }
-    } 
+        sprintf(data, "%9d ", (signed int) pt.st_size);
+        strcat(data, path);
+        printf("%s\n", data);
+    }  
 }
 
 void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char *path);
+
+void build_path(char *dest, char *path, char *add) {
+    strcpy(dest, path);
+    if (dest[strlen(dest) - 1] != '/') strcat(dest, "/");
+    strcat(dest, add);
+}
 
 void do_recursive(DIR *dir, int longL, int link, int acc, int hid, int recb, int reca, char *path) {
     struct dirent *content;
@@ -413,9 +408,7 @@ void do_recursive(DIR *dir, int longL, int link, int acc, int hid, int recb, int
 
     while ((content = readdir(dir)) != NULL) {
         if((strcmp(content->d_name, ".") == 0) || (strcmp(content->d_name, "..") == 0)) continue;
-        strcpy(it, path);
-        if (it[strlen(it) - 1] != '/') strcat(it, "/");
-        strcat(it, content->d_name);
+        build_path(it, path, content->d_name);
         if (lstat(it, &pt) == -1) {
             printf("Cannot stat %s: %s\n", it, strerror(errno));
             continue;
@@ -450,10 +443,11 @@ void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char 
                 printf("----- DIR ----- %s\n", path);
                 while ((content = readdir(dir)) != NULL) {
                     if (content->d_name[0] != '.' || hid) {
-                        strcpy(it, path);
-                        if (it[strlen(it) - 1] != '/') strcat(it, "/");
-                        strcat(it, content->d_name);
-                        listar(longL, link, acc, it);
+                        build_path(it, path, content->d_name);
+                        if (lstat(it, &pt) == -1) {
+                            printf("Cannot stat %s: %s\n", it, strerror(errno));
+                            continue;
+                        } else listar(pt, longL, link, acc, content->d_name);
                     }   
                 }
                 if (reca) {
@@ -463,7 +457,7 @@ void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char 
                 closedir(dir);
             }
         } else {
-            listar(longL, link, acc, path);
+            listar(pt, longL, link, acc, path);
         }
     } 
 }
@@ -471,6 +465,7 @@ void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char 
 void cmd_listfich(int chop_number, char *chops[]) {
     int longL = 0, link = 0, acc = 0, flags = 0;
     char path[MAX];
+    struct stat pt;
 
     if (chops[0] == NULL) {
         curr_dir();
@@ -502,7 +497,10 @@ void cmd_listfich(int chop_number, char *chops[]) {
             } else {
                 strcpy(path, chops[i]);
             }
-            listar(longL, link, acc, path);
+            if (lstat(path, &pt) == -1) {
+                printf("Cannot stat '%s': %s\n", path, strerror(errno));
+                continue;
+            } else listar(pt, longL, link, acc, path);
         }
     }
 }
