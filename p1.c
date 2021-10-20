@@ -356,7 +356,7 @@ char *get_info(char *data, int link, int acc, char *path) {
     char builder[MAX];
 
     if (lstat(path, &pt) == -1) {
-        perror("Cannot stat");
+        printf("Cannot stat '%s': %s\n", path, strerror(errno));
     } else {
         if (acc) modif_time = pt.st_atime;
         else modif_time = pt.st_mtime;
@@ -373,7 +373,7 @@ char *get_info(char *data, int link, int acc, char *path) {
 		strcat(data, builder);
         sprintf(builder, "%s ", ConvierteModo(pt.st_mode, builder));
 		strcat(data, builder);
-        sprintf(builder, "%9d ", (signed int) pt.st_size);
+        sprintf(builder, "%d ", (signed int) pt.st_size);
 		strcat(data, builder);
         strcat(data, strrchr(path, '/') + 1);
         if (S_ISLNK (pt.st_mode) && link){
@@ -397,7 +397,7 @@ void listar(int longL, int link, int acc, char *path) {
         if (longL) {
             printf("%s\n", get_info(data, link, acc, path)); 
         } else {
-            sprintf(data, "%9d ", (signed int) pt.st_size);
+            sprintf(data, "%d ", (signed int) pt.st_size);
             strcat(data, strrchr(path, '/') + 1);
             printf("%s\n", data);
         }
@@ -496,7 +496,7 @@ void cmd_listfich(int chop_number, char *chops[]) {
 
         for (int i = flags; i < chop_number; i++) {
             strcpy(path, chops[i]);
-            if (strncmp(chops[i], "/", 1) != 0 && strncmp(chops[i], "./", 2) != 0 && strncmp(chops[i], "../", 3) != 0) {
+            if (strncmp(chops[i], "/", 1) != 0 && strncmp(chops[i], "./", 2) != 0 && strncmp(chops[i], "../", 3) != 0 && strcmp(chops[i], ".") != 0 && strcmp(chops[i], "..") != 0) {
                 strcpy(path, "./");
                 strcat(path, chops[i]);
             } else {
@@ -546,7 +546,7 @@ void cmd_listdir(int chop_number, char *chops[]) {
 
         for (int i = flags; i < chop_number; i++) {
             strcpy(path, chops[i]);
-            if (strncmp(chops[i], "/", 1) != 0 && strncmp(chops[i], "./", 2) != 0 && strncmp(chops[i], "../", 3) != 0) {
+            if (strncmp(chops[i], "/", 1) != 0 && strncmp(chops[i], "./", 2) != 0 && strncmp(chops[i], "../", 3) != 0 && strcmp(chops[i], ".") != 0 && strcmp(chops[i], "..") != 0) {
                 strcpy(path, "./");
                 strcat(path, chops[i]);
             } else {
