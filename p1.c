@@ -289,12 +289,12 @@ void delete(char *tr, int rec){
     char todo[MAX] = "";
 
     if (lstat(tr, &pt) == -1) {
-        perror("Cannot delete");
+        printf("Cannot access '%s': %s\n", tr, strerror(errno));
         return;
     } else {
         if (!((pt.st_mode & S_IFMT) == S_IFDIR)) {
             if (unlink(tr) == -1) {
-                perror("Cannot delete file");
+                printf("Cannot delete file '%s': %s\n", tr, strerror(errno));
             }
             return;
         } else {
@@ -312,7 +312,7 @@ void delete(char *tr, int rec){
                 delete(tr, 0);
             } else {
                 if (rmdir(tr) == -1) {
-                    perror("Cannot delete directory");
+                    printf("Cannot delete directory '%s': %s\n", tr, strerror(errno));
                     return;
                 }
             }
@@ -410,7 +410,7 @@ void do_recursive(DIR *dir, int longL, int link, int acc, int hid, int recb, int
         if((strcmp(content->d_name, ".") == 0) || (strcmp(content->d_name, "..") == 0)) continue;
         build_path(it, path, content->d_name);
         if (lstat(it, &pt) == -1) {
-            printf("Cannot stat %s: %s\n", it, strerror(errno));
+            printf("Cannot access '%s': %s\n", it, strerror(errno));
             continue;
         }
         else {
@@ -428,7 +428,7 @@ void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char 
     struct dirent *content;
 
     if (lstat(path, &pt) == -1) {
-        printf("Cannot stat %s: %s\n", path, strerror(errno));
+        printf("Cannot access '%s': %s\n", path, strerror(errno));
         return;
     } else {
         if (S_ISDIR(pt.st_mode)) {
@@ -445,7 +445,7 @@ void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char 
                     if (content->d_name[0] != '.' || hid) {
                         build_path(it, path, content->d_name);
                         if (lstat(it, &pt) == -1) {
-                            printf("Cannot stat %s: %s\n", it, strerror(errno));
+                            printf("Cannot access '%s': %s\n", it, strerror(errno));
                             continue;
                         } else listar(pt, longL, link, acc, content->d_name);
                     }   
@@ -498,7 +498,7 @@ void cmd_listfich(int chop_number, char *chops[]) {
                 strcpy(path, chops[i]);
             }
             if (lstat(path, &pt) == -1) {
-                printf("Cannot stat '%s': %s\n", path, strerror(errno));
+                printf("Cannot access '%s': %s\n", path, strerror(errno));
                 continue;
             } else listar(pt, longL, link, acc, path);
         }
