@@ -300,7 +300,7 @@ void delete(char *tr, int rec){
         } else {
             if (rec) {
                 if ((dir = opendir(tr)) == NULL) {
-                    printf("Cannot open directory '%s': %s\n", tr, strerror(errno));
+                    printf("Cannot delete directory '%s': %s\n", tr, strerror(errno));
                     return;
                 } else {
                     while((entry = readdir(dir)) != NULL) {
