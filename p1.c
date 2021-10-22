@@ -289,7 +289,7 @@ void delete(char *tr, int rec){
     char it[MAX];
 
     if (lstat(tr, &pt) == -1) {
-        printf("Cannot access '%s': %s\n", tr, strerror(errno));
+        printf("Cannot delete '%s': %s\n", tr, strerror(errno));
         return;
     } else {
         if (!((pt.st_mode & S_IFMT) == S_IFDIR)) {
