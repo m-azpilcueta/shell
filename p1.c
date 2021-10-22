@@ -268,7 +268,7 @@ void cmd_crear(int chop_number, char *chops[]) {
         curr_dir();
         return;
     } else {
-        if (strcmp(chops[0], "-f") == 0) {
+        if (strcmp(chops[0], "-f") == 0 && chop_number > 1) {
             if ((fd = open(chops[1], O_CREAT | O_EXCL, 0744)) == -1) {
                 perror("Cannot create file");
                 return;
@@ -278,7 +278,7 @@ void cmd_crear(int chop_number, char *chops[]) {
                 perror("Cannot create directory");
                 return;
             }
-        }
+        } else curr_dir();
     } 
 }
 
