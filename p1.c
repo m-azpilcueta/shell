@@ -286,7 +286,7 @@ void delete(char *tr, int rec){
     struct stat pt;
     DIR *dir;
     struct dirent *entry;
-    char todo[MAX] = "";
+    char it[MAX];
 
     if (lstat(tr, &pt) == -1) {
         printf("Cannot access '%s': %s\n", tr, strerror(errno));
@@ -299,17 +299,20 @@ void delete(char *tr, int rec){
             return;
         } else {
             if (rec) {
-                dir = opendir(tr);
-                strcpy(todo, tr);
-                while((entry = readdir(dir)) != NULL) {
-                    if (entry -> d_name[0] == '.') continue;
-                    strcpy(todo, tr);
-                    strcat(todo, "/");
-                    strcat(todo, entry->d_name);
-                    delete(todo, 1);
+                if ((dir = opendir(tr)) == NULL) {
+                    printf("Cannot open directory '%s': %s\n", tr, strerror(errno));
+                    return;
+                } else {
+                    while((entry = readdir(dir)) != NULL) {
+                        if (entry -> d_name[0] == '.') continue;
+                        strcpy(it, tr);
+                        strcat(it, "/");
+                        strcat(it, entry->d_name);
+                        delete(it, 1);
+                    }
+                    closedir(dir);
+                    delete(tr, 0);
                 }
-                closedir(dir);
-                delete(tr, 0);
             } else {
                 if (rmdir(tr) == -1) {
                     printf("Cannot delete directory '%s': %s\n", tr, strerror(errno));
