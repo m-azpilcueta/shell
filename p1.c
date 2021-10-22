@@ -351,7 +351,7 @@ void cmd_borrarrec(int chop_number, char *chops[]) {
     }
 }
 
-char *get_info(struct stat pt, char *data, int link, int acc, char *path) {
+char *get_info(struct stat pt, char *data, int link, int acc, char *path, char *fpath) {
     time_t modif_time;
     struct passwd *passwd;
     struct group *group;
@@ -376,7 +376,7 @@ char *get_info(struct stat pt, char *data, int link, int acc, char *path) {
     strcat(data, builder);
     strcat(data, path);
     if (S_ISLNK (pt.st_mode) && link){
-        readlink(path, builder, pt.st_size);
+        readlink(fpath, builder, pt.st_size);
         builder[pt.st_size] = '\0';
         strcat(data, "->");
         strcat(data, builder);
@@ -384,11 +384,11 @@ char *get_info(struct stat pt, char *data, int link, int acc, char *path) {
     return data;
 }
 
-void listar(struct stat pt, int longL, int link, int acc, char *path) {
+void listar(struct stat pt, int longL, int link, int acc, char *path, char *fpath) {
     char data[MAX];
 
     if (longL) {
-        printf("%s\n", get_info(pt, data, link, acc, path)); 
+        printf("%s\n", get_info(pt, data, link, acc, path, fpath)); 
     } else {
         sprintf(data, "%9d ", (signed int) pt.st_size);
         strcat(data, path);
@@ -450,7 +450,7 @@ void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char 
                         if (lstat(it, &pt) == -1) {
                             printf("Cannot access '%s': %s\n", it, strerror(errno));
                             continue;
-                        } else listar(pt, longL, link, acc, content->d_name);
+                        } else listar(pt, longL, link, acc, content->d_name, it);
                     }   
                 }
                 if (reca) {
@@ -460,7 +460,7 @@ void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char 
                 closedir(dir);
             }
         } else {
-            listar(pt, longL, link, acc, path);
+            listar(pt, longL, link, acc, path, path);
         }
     } 
 }
@@ -503,7 +503,7 @@ void cmd_listfich(int chop_number, char *chops[]) {
             if (lstat(path, &pt) == -1) {
                 printf("Cannot access '%s': %s\n", path, strerror(errno));
                 continue;
-            } else listar(pt, longL, link, acc, path);
+            } else listar(pt, longL, link, acc, path, path);
         }
     }
 }
