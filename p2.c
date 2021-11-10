@@ -558,6 +558,10 @@ void cmd_listdir(int chop_number, char *chops[]) {
     }
 }
 
+/* Lab Assignment 2 */ 
+
+
+
 struct CMD c[] = {
     {"autores", cmd_autores},
     {"pid", cmd_pid},

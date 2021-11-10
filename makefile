@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -g
 
-p1: p1.o list.o 
-	$(CC) -o p1 p1.o list.o
+p2: p2.o list.o 
+	$(CC) -o p2 p2.o list.o
 
 clean: 
-	rm -f list.o p1.o p1
+	rm -f list.o p2.o p2
