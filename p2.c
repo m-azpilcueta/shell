@@ -52,6 +52,7 @@ struct ayuda a[] = {
     {"borrarrec", "borrarrec [name1 name2 ..]   Delete files or non empty directories"},
     {"listfich", "listfich [-long][-link][-acc] n1 n2 ..	List files"},
     {"listdir", "listdir [-reca] [-recb] [-hid][-long][-link][-acc] n1 n2 ..	List files inside directories"},
+    {"malloc", "malloc [-free] tam      Allocates (or deallocates) memory in the program"},
     {NULL, NULL}
 };
 
@@ -203,8 +204,8 @@ void cmd_uname() {
 void cmd_ayuda(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
-        "fin salir bye fecha pid autores hist comando carpeta infosis ayuda " 
-        "crear borrar borrarrec listfich listdir\n");
+               "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
+               "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria\n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
