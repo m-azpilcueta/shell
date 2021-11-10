@@ -17,10 +17,12 @@
 #include <grp.h>
 #include <errno.h>
 #include "list.h"
+#include "memlist.h"
 
 #define MAX 1024
 
 tHist hist;
+tMemList memlist;
 int rec_counter = 0;
 
 struct CMD {
@@ -216,6 +218,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
 
 void cmd_bye() {
     deleteHistory(&hist);
+    deleteMemlist(&memlist);
     exit(0);
 }
 
@@ -602,9 +605,10 @@ void process_input(int chop_number, char *chops[]) {
 int main() {
     char user_input[MAX];
     char *chops[MAX/2];
-    int chop_number = 0;
+    int chop_number;
 
     createEmptyHistory(&hist);
+    createEmptyMemlist(&memlist);
     while (1) {
         printf(">> ");
         fgets(user_input, MAX, stdin);
