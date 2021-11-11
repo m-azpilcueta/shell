@@ -53,6 +53,7 @@ struct ayuda a[] = {
     {"listfich", "listfich [-long][-link][-acc] n1 n2 ..	List files"},
     {"listdir", "listdir [-reca] [-recb] [-hid][-long][-link][-acc] n1 n2 ..	List files inside directories"},
     {"malloc", "malloc [-free] tam      Allocates (or deallocates) memory in the program"},
+    {"mmap", "mmap [-free] fich [perm]        Map (or unmaps) files in the process address space"},
     {NULL, NULL}
 };
 
@@ -612,6 +613,10 @@ void cmd_malloc(int chop_number, char *chops[]) {
     }
 }
 
+void cmd_mmap(int chop_number, char *chops[]) {
+
+}
+
 struct CMD c[] = {
     {"autores", cmd_autores},
     {"pid", cmd_pid},
@@ -630,6 +635,7 @@ struct CMD c[] = {
     {"listfich", cmd_listfich},
     {"listdir", cmd_listdir},
     {"malloc", cmd_malloc},
+    {"mmap", cmd_mmap},
     {NULL, NULL}
 };
 
