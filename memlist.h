@@ -29,4 +29,5 @@ int insertNode(Node node, tMemList* list);
 int removeNode(Node node, tMemList* list);
 void deleteMemlist(tMemList* list);
 void showNodes(tMemList list, char* alloc_type);
+Node* findNodeBySize(size_t size, char *alloc_type, tMemList list);
 #endif //SHELL_MEMLIST_H

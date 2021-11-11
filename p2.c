@@ -564,7 +564,53 @@ void cmd_listdir(int chop_number, char *chops[]) {
 
 /* Lab Assignment 2 */ 
 
-
+void cmd_malloc(int chop_number, char *chops[]) {
+    int tam;
+    void *address;
+    Node node;
+    Node* del;
+    if (chops[0] == NULL || ((chop_number == 1) & (strcmp(chops[0], "-free") == 0))) {
+        printf("----------- Malloc allocated block list for process: %d -----------\n", getpid());
+        showNodes(memlist, "malloc");
+    } else {
+        if (strcmp(chops[0], "-free") == 0) {
+            if ((tam = atoi(chops[1])) == 0) {
+                printf("Cannot deallocate blocks of %d bytes\n", tam);
+                return;
+            } else {
+                if ((del = findNodeBySize((size_t) tam, "malloc", memlist)) == NULL) {
+                    printf("There is no block of size %d allocated with malloc\n", tam);
+                    return;
+                } else {
+                    free(del->address);
+                    if (!removeNode(*del, &memlist)) {
+                        printf("Could not delete from block list\n");
+                    }
+                }
+            }
+        } else {
+            if ((tam = atoi(chops[0])) == 0) {
+                printf("Cannot allocate blocks of %d bytes\n", tam);
+                return;
+            } else {
+                if ((address = malloc((size_t) tam)) == NULL) {
+                    perror("Cannot allocate");
+                    return;
+                } else {
+                    node.address = address;
+                    strcpy(node.alloc_type, "malloc");
+                    node.size = (size_t) tam;
+                    node.time = time(NULL);
+                    if (insertNode(node, &memlist)) {
+                        printf("Allocated %lu bytes in %p\n", node.size, node.address);
+                    } else {
+                        printf("Could not insert into block list\n");
+                    }
+                }
+            }
+        }
+    }
+}
 
 struct CMD c[] = {
     {"autores", cmd_autores},
@@ -583,6 +629,7 @@ struct CMD c[] = {
     {"borrarrec", cmd_borrarrec},
     {"listfich", cmd_listfich},
     {"listdir", cmd_listdir},
+    {"malloc", cmd_malloc},
     {NULL, NULL}
 };
 

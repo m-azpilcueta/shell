@@ -64,24 +64,24 @@ int removeNode(Node node, tMemList* list) {
 
 void deleteMemlist(tMemList* list) {
     for (int i = 0; i <= list->last; i++) {
+        free(list->node[i]->address);
         free(list->node[i]);
     }
     list->last = -1;
 }
 
 void nodeInfo(Node node) {
-    time_t rawtime;
     struct tm *info;
     char buffer[50];
-    info = localtime(&rawtime);
+    info = localtime(&node.time);
     strftime(buffer,sizeof(buffer),"%c",info);
 
     if (strcmp(node.alloc_type, "malloc") == 0) {
-        printf("%p size: %lu %s %s\n", node.address, node.size, node.alloc_type, buffer);
+        printf("%20p size: %20lu %14s %s\n", node.address, node.size, node.alloc_type, buffer);
     } else if (strcmp(node.alloc_type, "shared memory") == 0) {
-        printf("%p size: %lu %s (key %d) %s\n", node.address, node.size, node.alloc_type, node.key, buffer);
+        printf("%20p size: %20lu %14s (key %d) %s\n", node.address, node.size, node.alloc_type, node.key, buffer);
     } else if (strcmp(node.alloc_type, "mapped file") == 0) {
-        printf("%p size: %lu %s %s (fd: %d) %s\n", node.address, node.size, node.alloc_type, node.name, node.key, buffer);
+        printf("%20p size: %20lu %14s %s (fd: %d) %s\n", node.address, node.size, node.alloc_type, node.name, node.key, buffer);
     }
 }
 
@@ -91,4 +91,15 @@ void showNodes(tMemList list, char *alloc_type) {
             nodeInfo(*list.node[i]);
         }
     }
+}
+
+Node* findNodeBySize(size_t size, char *alloc_type, tMemList list) {
+    for (int i = 0; i <= list.last; i++) {
+        if (strcmp(alloc_type, list.node[i]->alloc_type) == 0) {
+            if (size == list.node[i]->size) {
+                return list.node[i];
+            }
+        }
+    }
+    return NULL;
 }
