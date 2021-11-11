@@ -565,30 +565,36 @@ void cmd_listdir(int chop_number, char *chops[]) {
 
 /* Lab Assignment 2 */ 
 
+void malloc_free(char *chops[]) {
+    Node* del;
+    int tam;
+
+    if ((tam = atoi(chops[1])) == 0) {
+        printf("Cannot deallocate blocks of %d bytes\n", tam);
+        return;
+    } else {
+        if ((del = findNodeBySize((size_t) tam, "malloc", memlist)) == NULL) {
+            printf("There is no block of size %d allocated with malloc\n", tam);
+            return;
+        } else {
+            free(del->address);
+            if (!removeNode(*del, &memlist)) {
+                printf("Could not delete from block list\n");
+            }
+        }
+    }
+}
+
 void cmd_malloc(int chop_number, char *chops[]) {
     int tam;
     void *address;
     Node node;
-    Node* del;
     if (chops[0] == NULL || ((chop_number == 1) & (strcmp(chops[0], "-free") == 0))) {
         printf("----------- Malloc allocated block list for process: %d -----------\n", getpid());
         showNodes(memlist, "malloc");
     } else {
         if (strcmp(chops[0], "-free") == 0) {
-            if ((tam = atoi(chops[1])) == 0) {
-                printf("Cannot deallocate blocks of %d bytes\n", tam);
-                return;
-            } else {
-                if ((del = findNodeBySize((size_t) tam, "malloc", memlist)) == NULL) {
-                    printf("There is no block of size %d allocated with malloc\n", tam);
-                    return;
-                } else {
-                    free(del->address);
-                    if (!removeNode(*del, &memlist)) {
-                        printf("Could not delete from block list\n");
-                    }
-                }
-            }
+            malloc_free(chops);
         } else {
             if ((tam = atoi(chops[0])) == 0) {
                 printf("Cannot allocate blocks of %d bytes\n", tam);
@@ -613,8 +619,21 @@ void cmd_malloc(int chop_number, char *chops[]) {
     }
 }
 
-void cmd_mmap(int chop_number, char *chops[]) {
+void mmap_free() {
 
+}
+
+void cmd_mmap(int chop_number, char *chops[]) {
+    if (chops[0] == NULL || ((chop_number == 1) & (strcmp(chops[0], "-free") == 0))) {
+        printf("----------- List of mmap allocated blocks for process: %d -----------\n", getpid());
+        showNodes(memlist, "mmap");
+    } else {
+        if (strcmp(chops[0], "-free") == 0) {
+            malloc_free(chops);
+        } else {
+
+        }
+    }
 }
 
 struct CMD c[] = {
