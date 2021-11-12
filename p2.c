@@ -641,7 +641,24 @@ void * MmapFichero(char * fichero, int protection) {
 }
 
 void mmap_free(char *chops[]) {
-
+    Node* del;
+    if ((del = findNodeByName(chops[1], "mapped file", memlist)) == NULL) {
+        printf("File %s not mapped\n", chops[1]);
+    } else {
+        if (munmap(del->address, del->size) == -1) {
+            perror("Could not unmap file");
+            return;
+        } else {
+            if (close(del->key) == -1) {
+                perror("Could not close file");
+                return;
+            } else {
+                if (!removeNode(*del, &memlist)) {
+                    printf("Could not delete from block list\n");
+                }
+            }
+        }
+    }
 }
 
 void cmd_mmap(int chop_number, char *chops[]) {

@@ -103,3 +103,14 @@ Node* findNodeBySize(size_t size, char *alloc_type, tMemList list) {
     }
     return NULL;
 }
+
+Node* findNodeByName(char* name, char *alloc_type, tMemList list) {
+    for (int i = 0; i <= list.last; i++) {
+        if (strcmp(alloc_type, list.node[i]->alloc_type) == 0) {
+            if (strcmp(name, list.node[i]->name) == 0) {
+                return list.node[i];
+            }
+        }
+    }
+    return NULL;
+}
