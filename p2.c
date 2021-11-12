@@ -16,6 +16,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
+#include <sys/mman.h>
 #include "list.h"
 #include "memlist.h"
 
@@ -619,19 +620,50 @@ void cmd_malloc(int chop_number, char *chops[]) {
     }
 }
 
-void mmap_free() {
+void * MmapFichero(char * fichero, int protection) {
+    int df, map = MAP_PRIVATE, modo = O_RDONLY;
+    struct stat s;
+    void * p;
+    Node node;
+    if (protection & PROT_WRITE) modo = O_RDWR;
+    if (stat(fichero, & s) == -1 || (df = open(fichero, modo)) == -1)
+        return NULL;
+    if ((p = mmap(NULL, s.st_size, protection, map, df, 0)) == MAP_FAILED)
+        return NULL;
+    node.address = p;
+    node.size = s.st_size;
+    node.time = time(NULL);
+    strcpy(node.alloc_type, "mapped file");
+    strcpy(node.name, fichero);
+    node.key = df;
+    if (insertNode(node, &memlist) == 0) printf("Could not insert into block list\n");
+    return p;
+}
+
+void mmap_free(char *chops[]) {
 
 }
 
 void cmd_mmap(int chop_number, char *chops[]) {
+    int protection = 0;
+    char *perm;
+    void * p;
     if (chops[0] == NULL || ((chop_number == 1) & (strcmp(chops[0], "-free") == 0))) {
         printf("----------- List of mmap allocated blocks for process: %d -----------\n", getpid());
-        showNodes(memlist, "mmap");
+        showNodes(memlist, "mapped file");
     } else {
         if (strcmp(chops[0], "-free") == 0) {
-            malloc_free(chops);
+            mmap_free(chops);
         } else {
-
+            if ((perm = chops[1]) != NULL && strlen(perm) < 4) {
+                if (strchr(perm, 'r') != NULL) protection |= PROT_READ;
+                if (strchr(perm, 'w') != NULL) protection |= PROT_WRITE;
+                if (strchr(perm, 'x') != NULL) protection |= PROT_EXEC;
+            }
+            if ((p = MmapFichero(chops[0], protection)) == NULL)
+                perror("Could not map file");
+            else
+                printf("File %s mapped at %p\n", chops[0], p);
         }
     }
 }

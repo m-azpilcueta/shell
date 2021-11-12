@@ -64,7 +64,7 @@ int removeNode(Node node, tMemList* list) {
 
 void deleteMemlist(tMemList* list) {
     for (int i = 0; i <= list->last; i++) {
-        free(list->node[i]->address);
+        if (strcmp(list->node[i]->alloc_type, "malloc") == 0) free(list->node[i]->address);
         free(list->node[i]);
     }
     list->last = -1;
