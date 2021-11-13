@@ -716,6 +716,38 @@ void * ObtenerMemoriaShmget(key_t clave, size_t tam) {
     if (insertNode(node, &memlist) == 0) printf("Could not insert into block list\n");
     return (p);
 }
+
+void free_shared(key_t key) {
+    Node* del;
+    if ((del = findNodeByKey(key, "shared memory", memlist)) == NULL) {
+        printf("There is no block with that key in the process\n");
+    } else {
+        if (shmdt(del->address) == -1) {
+            perror("Cannot free memory");
+        } else {
+            if (!removeNode(*del, &memlist)) {
+                printf("Could not delete from block list\n");
+            }
+        }
+    }
+}
+
+void delete_key(key_t key) {
+    int id;
+    if (key == IPC_PRIVATE) {
+        errno = EINVAL;
+        perror("Cannot delete key");
+    } else {
+        if ((id = shmget(key, 0, 0777)) == -1) {
+            perror("Cannot delete key: shmget");
+        } else {
+            if (shmctl(id, IPC_RMID, NULL) == -1) {
+                perror("Cannot delete key: shmctl");
+            }
+        }
+    }
+}
+
 // COMPROBAR EXCEPCIONES DE LAS FUNCIONES
 void cmd_shared(int chop_number, char* chops[]) {
     key_t k;
@@ -731,10 +763,10 @@ void cmd_shared(int chop_number, char* chops[]) {
                 printf("shared -delkey needs a valid key\n");
                 return;
             } else {
-
+                delete_key((key_t) atoi(chops[1]));
             }
         } else if (strcmp(chops[0], "-free") == 0) {
-
+            free_shared((key_t) atoi(chops[1]));
         } else {
             if (strcmp(chops[0], "-create") == 0) {
                 aux_tam = strdup(chops[2]);
