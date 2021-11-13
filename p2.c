@@ -17,6 +17,7 @@
 #include <grp.h>
 #include <errno.h>
 #include <sys/mman.h>
+#include <sys/shm.h>
 #include "list.h"
 #include "memlist.h"
 
@@ -55,6 +56,7 @@ struct ayuda a[] = {
     {"listdir", "listdir [-reca] [-recb] [-hid][-long][-link][-acc] n1 n2 ..	List files inside directories"},
     {"malloc", "malloc [-free] tam      Allocates (or deallocates) memory in the program"},
     {"mmap", "mmap [-free] fich [perm]        Map (or unmaps) files in the process address space"},
+    {"shared", "shared [-free| -create| -delkey] cl [tam]     Allocates (or deallocates) shared memory in the program"},
     {NULL, NULL}
 };
 
@@ -685,6 +687,76 @@ void cmd_mmap(int chop_number, char *chops[]) {
     }
 }
 
+void * ObtenerMemoriaShmget(key_t clave, size_t tam) {
+    void * p;
+    int aux, id, flags = 0777;
+    struct shmid_ds s;
+    Node node;
+    if (tam)
+        flags = flags | IPC_CREAT | IPC_EXCL;
+    if (clave == IPC_PRIVATE) {
+        errno = EINVAL;
+        return NULL;
+    }
+    if ((id = shmget(clave, tam, flags)) == -1)
+        return (NULL);
+    if ((p = shmat(id, NULL, 0)) == (void * ) - 1) {
+        aux = errno;
+        if (tam)
+            shmctl(id, IPC_RMID, NULL);
+        errno = aux;
+        return (NULL);
+    }
+    shmctl(id, IPC_STAT, & s);
+    node.address = p;
+    node.size = s.shm_segsz;
+    node.time = time(NULL);
+    strcpy(node.alloc_type, "shared memory");
+    node.key = clave;
+    if (insertNode(node, &memlist) == 0) printf("Could not insert into block list\n");
+    return (p);
+}
+// COMPROBAR EXCEPCIONES DE LAS FUNCIONES
+void cmd_shared(int chop_number, char* chops[]) {
+    key_t k;
+    size_t tam = 0;
+    void * p;
+    char *aux_tam, *aux_key;
+    if (chops[0] == NULL || (chop_number == 1) & (strcmp(chops[0], "-free") == 0) || (chop_number <= 2) & (strcmp(chops[0], "-create") == 0)) {
+        printf("----------- List of shared allocated blocks for process: %d -----------\n", getpid());
+        showNodes(memlist, "shared memory");
+    } else {
+        if (strcmp(chops[0], "-delkey") == 0) {
+            if (chops[1] == NULL) {
+                printf("shared -delkey needs a valid key\n");
+                return;
+            } else {
+
+            }
+        } else if (strcmp(chops[0], "-free") == 0) {
+
+        } else {
+            if (strcmp(chops[0], "-create") == 0) {
+                aux_tam = strdup(chops[2]);
+                aux_key = strdup(chops[1]);
+            } else {
+                aux_key = strdup(chops[0]);
+                aux_tam = NULL;
+            }
+            k = (key_t) atoi(aux_key);
+            if (aux_tam != NULL) {
+                tam = (size_t) atoll(aux_tam);
+            }
+            free(aux_tam);
+            free(aux_key);
+            if ((p = ObtenerMemoriaShmget(k, tam)) == NULL)
+                perror("Cannot get shmget memory");
+            else
+                printf("Shmget memory with key %d allocated at %p\n", k, p);
+        }
+    }
+}
+
 struct CMD c[] = {
     {"autores", cmd_autores},
     {"pid", cmd_pid},
@@ -704,6 +776,7 @@ struct CMD c[] = {
     {"listdir", cmd_listdir},
     {"malloc", cmd_malloc},
     {"mmap", cmd_mmap},
+    {"shared", cmd_shared},
     {NULL, NULL}
 };
 
