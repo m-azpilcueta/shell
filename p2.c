@@ -61,7 +61,7 @@ struct ayuda a[] = {
     {"shared", "shared [-free | -create | -delkey] cl [tam]     Allocates (or deallocates) shared memory in the program"},
     {"dealloc", "dealloc [-malloc| -shared| -mmap]....       Deallocates a memory block allocated with malloc, shared or mmap"},
     {"memoria", "memoria [-blocks| -funcs| -vars| -all| -pmap]...       Shows details of the memory of the process"},
-    {"volcarmem", "volcarmem addr [cont]      Dump on the screen the contents (cont bytes) of memory address addr"}
+    {"volcarmem", "volcarmem addr [cont]      Dump on the screen the contents (cont bytes) of memory address addr"},
     {NULL, NULL}
 };
 
@@ -913,7 +913,37 @@ void cmd_memoria(int chop_number, char* chops[]) {
 }
 
 void cmd_volcarmem(int chop_number, char *chops[]) {
-
+    int cont = 25, remain = 25, loop_cycles = 25;
+    char* address;
+    char character;
+    if (chops[0] == NULL) {
+        printf("Missing memory address to dump\n");
+    } else {
+        address = (void*) strtoul(chops[0], NULL, 16);
+        if (chops[1] != NULL) {
+            cont = atoi(chops[1]);
+            remain = cont;
+            if (cont < 25) loop_cycles = cont;
+        }
+        for (int i = 0; i < cont; i+=25) {
+            if (remain == 0) break;
+            for (int j = 0; j < loop_cycles; j++) {
+                character = *(i + j + address);
+                if ((character >= 32) & (character < 127))
+                    printf(" %2c ", character);
+                else
+                    printf("    ");
+            }
+            printf("\n");
+            for (int j = 0; j < loop_cycles; j++) {
+                character = *(i + j + address);
+                printf(" %02x ", (unsigned char) character);
+                remain--;
+            }
+            if (remain < 25) loop_cycles = remain;
+            printf("\n");
+        }
+    }
 }
 
 struct CMD c[] = {
