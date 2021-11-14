@@ -86,6 +86,10 @@ void nodeInfo(Node node) {
 }
 
 void showNodes(tMemList list, char *alloc_type) {
+    if (list.last == -1) {
+        printf("Block list is empty\n");
+        return;
+    }
     for (int i = 0; i <= list.last; i++) {
         if (strcmp(list.node[i]->alloc_type, alloc_type) == 0 || strcmp(alloc_type, "-all") == 0) {
             nodeInfo(*list.node[i]);
