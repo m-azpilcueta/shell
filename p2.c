@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include <sys/shm.h>
+#include <sys/wait.h>
 #include "list.h"
 #include "memlist.h"
 
@@ -26,6 +27,7 @@
 tHist hist;
 tMemList memlist;
 int rec_counter = 0;
+int global1 = 1, global2 = 2, global3 = 3;
 
 struct CMD {
     char *name;
@@ -738,7 +740,7 @@ void delete_key(key_t key) {
         errno = EINVAL;
         perror("Cannot delete key");
     } else {
-        if ((id = shmget(key, 0, 0777)) == -1) {
+        if ((id = shmget(key, 0, 0666)) == -1) {
             perror("Cannot delete key: shmget");
         } else {
             if (shmctl(id, IPC_RMID, NULL) == -1) {
@@ -763,7 +765,7 @@ void cmd_shared(int chop_number, char* chops[]) {
                 printf("shared -delkey needs a valid key\n");
                 return;
             } else {
-                delete_key((key_t) atoi(chops[1]));
+                delete_key((key_t) strtoul(chops[1], NULL, 10));
             }
         } else if (strcmp(chops[0], "-free") == 0) {
             free_shared((key_t) atoi(chops[1]));
@@ -835,8 +837,78 @@ void cmd_dealloc(int chop_number, char* chops[]) {
     }
 }
 
+void memoria_vars() {
+    int local1 = 1, local2 = 2, local3 = 3;
+    static int static1 = 1, static2 = 2, static3 = 3;
+    printf("----------- Global Variables -----------\n");
+    printf("Global variable 1: %p\n", &global1);
+    printf("Global variable 2: %p\n", &global2);
+    printf("Global variable 3: %p\n", &global3);
+    printf("\n");
+    printf("----------- Static Variables -----------\n");
+    printf("Static variable 1: %p\n", &static1);
+    printf("Static variable 2: %p\n", &static2);
+    printf("Static variable 3: %p\n", &static3);
+    printf("\n");
+    printf("----------- Local Variables -----------\n");
+    printf("Local variable 1: %p\n", &local1);
+    printf("Local variable 2: %p\n", &local2);
+    printf("Local variable 3: %p\n", &local3);
+}
+
+void memoria_funcs() {
+    printf("----------- Program Functions -----------\n");
+    printf("malloc function: %p\n", cmd_malloc);
+    printf("shared function: %p\n", cmd_shared);
+    printf("mmap function: %p\n", cmd_mmap);
+    printf("\n");
+    printf("----------- Library Functions -----------\n");
+    printf("strdup function: %p\n", strdup);
+    printf("strcat function: %p\n", strcat);
+    printf("strcmp function: %p\n", strcmp);
+}
+
+void dopmap() {
+    pid_t pid;
+    char elpid[32];
+    char * argv[3] = {
+            "pmap",
+            elpid,
+            NULL
+    };
+    sprintf(elpid, "%d", (int) getpid());
+    if ((pid = fork()) == -1) {
+        perror("Cannot create process");
+        return;
+    }
+    if (pid == 0) {
+        if (execvp(argv[0], argv) == -1)
+            perror("Cannot execute pmap");
+        exit(1);
+    }
+    waitpid(pid, NULL, 0);
+}
+
 void cmd_memoria(int chop_number, char* chops[]) {
-    
+    if (chops[0] == NULL || strcmp(chops[0], "-all") == 0) {
+        printf("----------- List of allocated blocks for process: %d -----------\n", getpid());
+        showNodes(memlist, "-all");
+        printf("\n");
+        memoria_vars();
+        printf("\n");
+        memoria_funcs();
+    } else {
+        if (strcmp(chops[0], "-blocks") == 0) {
+            printf("----------- List of allocated blocks for process: %d -----------\n", getpid());
+            showNodes(memlist, "-all");
+        } else if (strcmp(chops[0], "-vars") == 0) {
+            memoria_vars();
+        } else if (strcmp(chops[0], "-funcs") == 0) {
+            memoria_funcs();
+        } else if (strcmp(chops[0], "-pmap") == 0) {
+            dopmap();
+        }
+    }
 }
 
 struct CMD c[] = {
