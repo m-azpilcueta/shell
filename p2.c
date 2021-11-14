@@ -926,6 +926,7 @@ void cmd_volcarmem(int chop_number, char *chops[]) {
             remain = cont;
             if (cont < 25) loop_cycles = cont;
         }
+        printf("Dump %d bytes from address %p\n", cont, address);
         for (int i = 0; i < cont; i+=25) {
             if (remain == 0) break;
             for (int j = 0; j < loop_cycles; j++) {
@@ -948,7 +949,23 @@ void cmd_volcarmem(int chop_number, char *chops[]) {
 }
 
 void cmd_llenarmem(int chop_number, char *chops[]) {
-
+    char* address;
+    int cont = 128;
+    char default_byte = 'A';
+    if (chops[0] == NULL) {
+        printf("Missing memory address to fill\n");
+    } else {
+        address = (void*) strtoul(chops[0], NULL, 16);
+        if (chops[1] != NULL) {
+            if ((chop_number == 2) & (strncmp(chops[1], "0x", 2) == 0 || strncmp(chops[1], "0X", 2) == 0))
+                default_byte = strtoul(chops[1], NULL, 16);
+            else cont = atoi(chops[1]);
+        }
+        if (chop_number == 3)
+            default_byte = strtoul(chops[2], NULL, 16);
+        for (int i = 0; i < cont; i++) address[i] = default_byte;
+        printf("Filling %d bytes from address %p with %c(%x)\n", cont, address, default_byte, (unsigned char) default_byte);
+    }
 }
 
 struct CMD c[] = {
