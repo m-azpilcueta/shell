@@ -61,6 +61,7 @@ struct ayuda a[] = {
     {"shared", "shared [-free | -create | -delkey] cl [tam]     Allocates (or deallocates) shared memory in the program"},
     {"dealloc", "dealloc [-malloc| -shared| -mmap]....       Deallocates a memory block allocated with malloc, shared or mmap"},
     {"memoria", "memoria [-blocks| -funcs| -vars| -all| -pmap]...       Shows details of the memory of the process"},
+    {"volcarmem", "volcarmem addr [cont]      Dump on the screen the contents (cont bytes) of memory address addr"}
     {NULL, NULL}
 };
 
@@ -911,6 +912,10 @@ void cmd_memoria(int chop_number, char* chops[]) {
     }
 }
 
+void cmd_volcarmem(int chop_number, char *chops[]) {
+
+}
+
 struct CMD c[] = {
     {"autores", cmd_autores},
     {"pid", cmd_pid},
@@ -933,6 +938,7 @@ struct CMD c[] = {
     {"shared", cmd_shared},
     {"dealloc", cmd_dealloc},
     {"memoria", cmd_memoria},
+    {"volcarmem", cmd_volcarmem},
     {NULL, NULL}
 };
 
