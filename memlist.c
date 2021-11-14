@@ -125,3 +125,12 @@ Node* findNodeByKey(key_t key, char *alloc_type, tMemList list) {
     }
     return NULL;
 }
+
+Node* findNodeByAddress(char *address, tMemList list) {
+    void *addr = (void *) strtol(address, NULL, 16);
+    for (int i = 0; i <= list.last; i++) {
+        if (addr == list.node[i]->address)
+            return list.node[i];
+    }
+    return NULL;
+}

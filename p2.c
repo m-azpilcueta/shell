@@ -569,22 +569,15 @@ void cmd_listdir(int chop_number, char *chops[]) {
 
 /* Lab Assignment 2 */ 
 
-void malloc_free(char *chops[]) {
+void malloc_free(size_t tam) {
     Node* del;
-    int tam;
-
-    if ((tam = atoi(chops[1])) == 0) {
-        printf("Cannot deallocate blocks of %d bytes\n", tam);
+    if ((del = findNodeBySize(tam, "malloc", memlist)) == NULL) {
+        printf("There is no block of size %lu allocated with malloc\n", tam);
         return;
     } else {
-        if ((del = findNodeBySize((size_t) tam, "malloc", memlist)) == NULL) {
-            printf("There is no block of size %d allocated with malloc\n", tam);
-            return;
-        } else {
-            free(del->address);
-            if (!removeNode(*del, &memlist)) {
-                printf("Could not delete from block list\n");
-            }
+        free(del->address);
+        if (!removeNode(*del, &memlist)) {
+            printf("Could not delete from block list\n");
         }
     }
 }
@@ -598,7 +591,12 @@ void cmd_malloc(int chop_number, char *chops[]) {
         showNodes(memlist, "malloc");
     } else {
         if (strcmp(chops[0], "-free") == 0) {
-            malloc_free(chops);
+            if ((tam = atoi(chops[1])) == 0) {
+                printf("Cannot deallocate blocks of %d bytes\n", tam);
+                return;
+            } else {
+                malloc_free((size_t) tam);
+            }
         } else {
             if ((tam = atoi(chops[0])) == 0) {
                 printf("Cannot allocate blocks of %d bytes\n", tam);
@@ -643,10 +641,10 @@ void * MmapFichero(char * fichero, int protection) {
     return p;
 }
 
-void mmap_free(char *chops[]) {
+void mmap_free(char *name) {
     Node* del;
-    if ((del = findNodeByName(chops[1], "mapped file", memlist)) == NULL) {
-        printf("File %s not mapped\n", chops[1]);
+    if ((del = findNodeByName(name, "mapped file", memlist)) == NULL) {
+        printf("File %s not mapped\n", name);
     } else {
         if (munmap(del->address, del->size) == -1) {
             perror("Could not unmap file");
@@ -673,7 +671,7 @@ void cmd_mmap(int chop_number, char *chops[]) {
         showNodes(memlist, "mapped file");
     } else {
         if (strcmp(chops[0], "-free") == 0) {
-            mmap_free(chops);
+            mmap_free(chops[1]);
         } else {
             if ((perm = chops[1]) != NULL && strlen(perm) < 4) {
                 if (strchr(perm, 'r') != NULL) protection |= PROT_READ;
@@ -791,7 +789,49 @@ void cmd_shared(int chop_number, char* chops[]) {
 }
 
 void cmd_dealloc(int chop_number, char* chops[]) {
-
+    Node* del;
+    int tam;
+    if (chops[0] == NULL) {
+        printf("----------- List of allocated blocks for process: %d -----------\n", getpid());
+        showNodes(memlist, "-all");
+    } else {
+        if (strcmp(chops[0], "-malloc") == 0) {
+            if (chops[1] == NULL) {
+                printf("----------- List of malloc allocated blocks for process: %d -----------\n", getpid());
+                showNodes(memlist, "malloc");
+            } else {
+                if ((tam = atoi(chops[1])) == 0) {
+                    printf("Cannot deallocate blocks of %d bytes\n", tam);
+                    return;
+                } else {
+                    malloc_free((size_t) tam);
+                }
+            }
+        } else if (strcmp(chops[0], "-shared") == 0) {
+            if (chops[1] == NULL) {
+                printf("----------- List of shared allocated blocks for process: %d -----------\n", getpid());
+                showNodes(memlist, "shared memory");
+            } else {
+                free_shared((key_t) atoi(chops[1]));
+            }
+        } else if (strcmp(chops[0], "-mmap") == 0) {
+            if (chops[1] == NULL) {
+                printf("----------- List of mmap allocated blocks for process: %d -----------\n", getpid());
+                showNodes(memlist, "mapped file");
+            } else {
+                mmap_free(chops[1]);
+            }
+        } else {
+            if ((del = findNodeByAddress(chops[0], memlist)) == NULL) {
+                printf("Cannot find block with this address in the list:\n");
+                showNodes(memlist, "-all");
+            } else {
+                if (strcmp(del->alloc_type, "malloc") == 0) malloc_free(del->size);
+                else if (strcmp(del->alloc_type, "mapped file") == 0) mmap_free(del->name);
+                else if (strcmp(del->alloc_type, "shared memory") == 0) free_shared(del->key);
+            }
+        }
+    }
 }
 
 struct CMD c[] = {

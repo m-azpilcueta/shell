@@ -32,4 +32,5 @@ void showNodes(tMemList list, char* alloc_type);
 Node* findNodeBySize(size_t size, char *alloc_type, tMemList list);
 Node* findNodeByName(char* name, char *alloc_type, tMemList list);
 Node* findNodeByKey(key_t key, char *alloc_type, tMemList list);
+Node* findNodeByAddress(char *address, tMemList list);
 #endif //SHELL_MEMLIST_H
