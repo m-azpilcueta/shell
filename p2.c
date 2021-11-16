@@ -23,6 +23,7 @@
 #include "memlist.h"
 
 #define MAX 1024
+#define LEERCOMPLETO ((ssize_t) - 1)
 
 tHist hist;
 tMemList memlist;
@@ -966,6 +967,24 @@ void cmd_llenarmem(int chop_number, char *chops[]) {
         for (int i = 0; i < cont; i++) address[i] = default_byte;
         printf("Filling %d bytes from address %p with %c(%x)\n", cont, address, default_byte, (unsigned char) default_byte);
     }
+}
+
+ssize_t LeerFichero(char * fich, void * p, ssize_t n) {
+    ssize_t nleidos, tam = n;
+    int df, aux;
+    struct stat s;
+    if (stat(fich, & s) == -1 || (df = open(fich, O_RDONLY)) == -1)
+        return ((ssize_t) - 1);
+    if (n == LEERCOMPLETO)
+        tam = (ssize_t) s.st_size;
+    if ((nleidos = read(df, p, tam)) == -1) {
+        aux = errno;
+        close(df);
+        errno = aux;
+        return ((ssize_t) - 1);
+    }
+    close(df);
+    return (nleidos);
 }
 
 struct CMD c[] = {
