@@ -23,6 +23,7 @@
 #include "memlist.h"
 
 #define MAX 1024
+#define RSIZE 4096
 #define LEERCOMPLETO ((ssize_t) - 1)
 
 tHist hist;
@@ -64,6 +65,7 @@ struct ayuda a[] = {
     {"memoria", "memoria [-blocks| -funcs| -vars| -all| -pmap]...       Shows details of the memory of the process"},
     {"volcarmem", "volcarmem addr [cont]      Dump on the screen the contents (cont bytes) of memory address addr"},
     {"llenarmem", "llenarmem addr [cont] [byte]     Fills memory with byte from addr"},
+    {"recursiva", "recursiva [n]   Calls recursive function n times"},
     {NULL, NULL}
 };
 
@@ -969,6 +971,26 @@ void cmd_llenarmem(int chop_number, char *chops[]) {
     }
 }
 
+void recursive (int n){
+  char automatic[RSIZE];
+  static char estatic[RSIZE];
+  printf ("parameter n:%d in %p\n",n,&n);
+  printf ("static array in:%p \n",estatic);
+  printf ("automatic array in %p\n",automatic);
+  n--;
+  if (n>0)          //the recursive function is performed while is valid the number
+  recursive(n);
+}
+
+
+void cmd_recursiva(int chop_number, char *chops[]){
+  int aux = atoi(chops[0]);
+  if (aux>0)          //the input is checked for validation
+    recursive (aux);
+  else
+    printf("Error: the number must be bigger than 0\n");
+}
+
 ssize_t LeerFichero(char * fich, void * p, ssize_t n) {
     ssize_t nleidos, tam = n;
     int df, aux;
@@ -1011,6 +1033,7 @@ struct CMD c[] = {
     {"memoria", cmd_memoria},
     {"volcarmem", cmd_volcarmem},
     {"llenarmem", cmd_llenarmem},
+    {"recursiva", cmd_recursiva},
     {NULL, NULL}
 };
 
