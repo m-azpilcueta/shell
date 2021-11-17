@@ -975,23 +975,19 @@ void cmd_llenarmem(int chop_number, char *chops[]) {
 }
 
 void recursive(int n) {
-  char automatic[RSIZE];
-  static char estatic[RSIZE];
-  printf ("parameter n:%d in %p\n",n,&n);
-  printf ("static array in:%p \n",estatic);
-  printf ("automatic array in %p\n",automatic);
-  n--;
-  if (n>0)          //the recursive function is performed while is valid the number
-  recursive(n);
+    char automatic[RSIZE];
+    static char estatic[RSIZE];
+    printf ("parameter n:%d in %p\n", n, &n);
+    printf ("static array in:%p \n", estatic);
+    printf ("automatic array in %p\n", automatic);
+    n--;
+    if (n > 0) recursive(n);
 }
 
-
 void cmd_recursiva(int chop_number, char *chops[]) {
-  int aux = atoi(chops[0]);
-  if (aux>0)          //the input is checked for validation
-    recursive (aux);
-  else
-    printf("Error: the number must be bigger than 0\n");
+    int aux = atoi(chops[0]);
+    if (aux > 0) recursive (aux);
+    else printf("Error: 'n' must be a number greater than 0\n");
 }
 
 ssize_t LeerFichero(char * fich, void * p, ssize_t n) {
@@ -1015,52 +1011,46 @@ ssize_t LeerFichero(char * fich, void * p, ssize_t n) {
 void do_write(int chop_number, char *chops[]) {
     ssize_t cont;
     char *addr;
-    int o = 0;
-    int fd;
-    int flags = O_CREAT | O_EXCL | O_WRONLY | O_APPEND;
+    int o = 0, fd, flags = O_CREAT | O_EXCL | O_WRONLY;
     if (chop_number < 3){
         printf("Missing parameters\n");
     }
-    else{
-        if (strcmp(chops[0], "-o")==0){
+    else {
+        if (strcmp(chops[0], "-o") == 0) {
             flags = O_CREAT | O_WRONLY | O_TRUNC;
-            o=1;
+            o = 1;
         }
         cont = (ssize_t) atoi(chops[2+o]);
-        addr = (char *)strtoul(chops[1+o], NULL, 16);
-
-        if ((fd=open(chops[0+o], flags, 0744))==-1){
-            perror("cannot open or create file");
+        addr = (char *) strtoul(chops[1+o], NULL, 16);
+        if ((fd = open(chops[0+o], flags, 0744)) == -1) {
+            perror("Cannot open or create file");
         }
         else{
-            if (write(fd, addr, cont)==-1){
-                perror("cannnot write");
+            if (write(fd, addr, cont) == -1) {
+                perror("Cannot write file");
+            } else {
+                printf("%d bytes written into file %s\n", (int) cont, chops[0+o]);
             }
-            else{
-                printf("%d Bytes written into file %s\n", (int)cont, chops[0+o]);
-            }
-        close(fd);
+            close(fd);
         }
     }
 }
 
 void do_read(int chop_number, char *chops[]) {
-    ssize_t size;
-    ssize_t cont = LEERCOMPLETO;
+    ssize_t size, cont = LEERCOMPLETO;
     char* addr;
-    if (chop_number < 2){
+    if (chop_number < 2) {
         printf("Missing parameters\n");
     }
-    else{
-        if (chops[2]!=NULL){
-            cont = (ssize_t)atoi(chops[2]); 
+    else {
+        if (chops[2] != NULL) {
+            cont = (ssize_t) atoi(chops[2]);
         }
-        addr = (char *)strtoul(chops[1], NULL, 16);
-        if ((size = LeerFichero(chops[0], addr, cont))==-1){
-            perror("Cannot read");
-        }
-        else{
-            printf("%d Bytes read from file %s\n",(int) size, chops[0]);
+        addr = (char *) strtoul(chops[1], NULL, 16);
+        if ((size = LeerFichero(chops[0], addr, cont)) == -1) {
+            perror("Cannot read file");
+        } else {
+            printf("%d bytes read from file %s\n", (int) size, chops[0]);
         }
     }
 }
