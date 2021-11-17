@@ -33,7 +33,7 @@ int global1 = 1, global2 = 2, global3 = 3;
 
 struct CMD {
     char *name;
-    void (*pf) (int, char **);
+    void (*pf)(int, char **);
 };
 
 struct ayuda {
@@ -42,49 +42,50 @@ struct ayuda {
 };
 
 struct ayuda a[] = {
-    {"autores", "autores [-n|-l]	Show the names and logins of the authors"},
-    {"pid", "pid [-p]	Show the pid of this shell or from its parent process"},
-    {"carpeta", "carpeta [dir]	Change (or show) the current directory of the shell"},
-    {"fecha", "fecha [-d|-h]	Show the date and/or the current time"},
-    {"hist", "hist [-c|-N]	Show the historic of commands, use -c to delete it"},
-    {"comando", "comando [-N]	Repeat command N (from the historic)"},
-    {"infosis", "infosis 	Show information about the machine where the shell is running"},
-    {"ayuda", "ayuda [cmd]	Shows help about commands"},
-    {"fin", "fin 	Terminates the shell execution"},
-    {"salir", "salir 	Terminates the shell execution"},
-    {"bye", "bye 	Terminates the shell execution"},
-    {"crear", "crear [-f] [name]    Creates a file or a directory"},
-    {"borrar", "borrar [name1 name2 ..]    Delete files or empty directories"},
-    {"borrarrec", "borrarrec [name1 name2 ..]   Delete files or non empty directories"},
-    {"listfich", "listfich [-long][-link][-acc] n1 n2 ..	List files"},
-    {"listdir", "listdir [-reca] [-recb] [-hid][-long][-link][-acc] n1 n2 ..	List files inside directories"},
-    {"malloc", "malloc [-free] tam      Allocates (or deallocates) memory in the program"},
-    {"mmap", "mmap [-free] fich [perm]        Map (or unmaps) files in the process address space"},
-    {"shared", "shared [-free | -create | -delkey] cl [tam]     Allocates (or deallocates) shared memory in the program"},
-    {"dealloc", "dealloc [-malloc | -shared| -mmap]....       Deallocates a memory block allocated with malloc, shared or mmap"},
-    {"memoria", "memoria [-blocks| -funcs| -vars| -all| -pmap]...       Shows details of the memory of the process"},
-    {"volcarmem", "volcarmem addr [cont]      Dump on the screen the contents (cont bytes) of memory address addr"},
-    {"llenarmem", "llenarmem addr [cont] [byte]     Fills memory with byte from addr"},
-    {"recursiva", "recursiva [n]   Calls recursive function n times"},
-    {"e-s", "e-s [read|write] [-o] fich addr cont\n"
-            "With read, reads cont bytes from file fich into address addr\n"
-            "With write, writes cont bytes from memory address addr into file fich"},
-    {NULL, NULL}
+        {"autores",   "autores [-n|-l]	Show the names and logins of the authors"},
+        {"pid",       "pid [-p]	Show the pid of this shell or from its parent process"},
+        {"carpeta",   "carpeta [dir]	Change (or show) the current directory of the shell"},
+        {"fecha",     "fecha [-d|-h]	Show the date and/or the current time"},
+        {"hist",      "hist [-c|-N]	Show the historic of commands, use -c to delete it"},
+        {"comando",   "comando [-N]	Repeat command N (from the historic)"},
+        {"infosis",   "infosis 	Show information about the machine where the shell is running"},
+        {"ayuda",     "ayuda [cmd]	Shows help about commands"},
+        {"fin",       "fin 	Terminates the shell execution"},
+        {"salir",     "salir 	Terminates the shell execution"},
+        {"bye",       "bye 	Terminates the shell execution"},
+        {"crear",     "crear [-f] [name]    Creates a file or a directory"},
+        {"borrar",    "borrar [name1 name2 ..]    Delete files or empty directories"},
+        {"borrarrec", "borrarrec [name1 name2 ..]   Delete files or non empty directories"},
+        {"listfich",  "listfich [-long][-link][-acc] n1 n2 ..	List files"},
+        {"listdir",   "listdir [-reca] [-recb] [-hid][-long][-link][-acc] n1 n2 ..	List files inside directories"},
+        {"malloc",    "malloc [-free] tam      Allocates (or deallocates) memory in the program"},
+        {"mmap",      "mmap [-free] fich [perm]        Map (or unmaps) files in the process address space"},
+        {"shared",    "shared [-free | -create | -delkey] cl [tam]     Allocates (or deallocates) shared memory in the program"},
+        {"dealloc",   "dealloc [-malloc | -shared| -mmap]....       Deallocates a memory block allocated with malloc, shared or mmap"},
+        {"memoria",   "memoria [-blocks| -funcs| -vars| -all| -pmap]...       Shows details of the memory of the process"},
+        {"volcarmem", "volcarmem addr [cont]      Dump on the screen the contents (cont bytes) of memory address addr"},
+        {"llenarmem", "llenarmem addr [cont] [byte]     Fills memory with byte from addr"},
+        {"recursiva", "recursiva [n]   Calls recursive function n times"},
+        {"e-s",       "e-s [read|write] [-o] fich addr cont\n"
+                      "With read, reads cont bytes from file fich into address addr\n"
+                      "With write, writes cont bytes from memory address addr into file fich"},
+        {NULL,        NULL}
 };
 
 int chop_input(char *cadena, char *trozos[]);
+
 void process_input(int chop_number, char *chops[]);
 
 void cmd_autores(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         printf("Daniel Ferreiro Villamor: d.ferreiro\n"
-        "Martín Azpilcueta Rabuñal: m.azpilcueta\n");
+               "Martín Azpilcueta Rabuñal: m.azpilcueta\n");
     } else if (strcmp(chops[0], "-l") == 0) {
         printf("d.ferreiro\n"
-        "m.azpilcueta\n");
+               "m.azpilcueta\n");
     } else if (strcmp(chops[0], "-n") == 0) {
         printf("Daniel Ferreiro Villamor\n"
-        "Martín Azpilcueta Rabuñal\n");
+               "Martín Azpilcueta Rabuñal\n");
     }
 }
 
@@ -104,7 +105,7 @@ void curr_dir() {
         printf("%s\n", dir);
     } else {
         perror("Cannot return directory");
-    }    
+    }
 }
 
 void cmd_carpeta(int chop_number, char *chops[]) {
@@ -125,7 +126,7 @@ void solo_fecha() {
     time(&rawtime);
     info = localtime(&rawtime);
 
-    strftime(buffer,sizeof(buffer),"%d/%m/%Y",info);
+    strftime(buffer, sizeof(buffer), "%d/%m/%Y", info);
     printf("%s\n", buffer);
 }
 
@@ -134,8 +135,8 @@ void solo_hora() {
 
     time_t t;
     time(&t);
-    chop_input(ctime(&t),tr);
-    printf("%s\n",tr[3]);
+    chop_input(ctime(&t), tr);
+    printf("%s\n", tr[3]);
 }
 
 void cmd_fecha(int chop_number, char *chops[]) {
@@ -169,13 +170,13 @@ void cmd_hist(int chop_number, char *chops[]) {
             }
             showNHistory(pos, hist);
         }
-    }    
+    }
 }
 
 void cmd_comando(int chop_number, char *chops[]) {
     long cmd_number;
     int cmd_int, args_number = 0;
-    char *remaining, *command, *cmd_chops[MAX/2], command_cpy[MAX];
+    char *remaining, *command, *cmd_chops[MAX / 2], command_cpy[MAX];
 
     if (isEmptyHistory(hist)) return;
     if (chops[0] == NULL) {
@@ -187,11 +188,11 @@ void cmd_comando(int chop_number, char *chops[]) {
         printf("Invalid argument: only numbers are allowed\n");
         return;
     } else {
-        cmd_int = (int) cmd_number; 
+        cmd_int = (int) cmd_number;
         if ((cmd_int < 0) | (cmd_int > hist.last)) {
             printf("There is no element %d in the historic\n", cmd_int);
             return;
-        }   
+        }
         if (rec_counter >= 10) {
             rec_counter = 0;
             printf("Too many recursive calls\n");
@@ -202,7 +203,7 @@ void cmd_comando(int chop_number, char *chops[]) {
         printf("Executing hist (%d): %s", cmd_int, command_cpy);
         rec_counter++;
         args_number = chop_input(command_cpy, cmd_chops);
-        process_input(args_number, cmd_chops);   
+        process_input(args_number, cmd_chops);
         rec_counter = 0;
     }
 }
@@ -213,7 +214,8 @@ void cmd_uname() {
     if (uname(&uname_content) != 0) {
         perror("Cannot uname");
     } else {
-        printf("%s (%s), OS: %s%s%s\n", uname_content.nodename, uname_content.machine, uname_content.sysname, uname_content.release, uname_content.version);
+        printf("%s (%s), OS: %s%s%s\n", uname_content.nodename, uname_content.machine, uname_content.sysname,
+               uname_content.release, uname_content.version);
     }
 }
 
@@ -244,26 +246,26 @@ void cmd_bye() {
 char LetraTF(mode_t m) {
     switch (m & S_IFMT) {
         /*and bit a bit con los bits de formato,0170000 */
-    case S_IFSOCK:
-        return 's'; /*socket */
-    case S_IFLNK:
-        return 'l'; /*symbolic link*/
-    case S_IFREG:
-        return '-'; /* fichero normal*/
-    case S_IFBLK:
-        return 'b'; /*block device*/
-    case S_IFDIR:
-        return 'd'; /*directorio */
-    case S_IFCHR:
-        return 'c'; /*char  device*/
-    case S_IFIFO:
-        return 'p'; /*pipe*/
-    default:
-        return '?'; /*desconocido, no deberia aparecer*/
+        case S_IFSOCK:
+            return 's'; /*socket */
+        case S_IFLNK:
+            return 'l'; /*symbolic link*/
+        case S_IFREG:
+            return '-'; /* fichero normal*/
+        case S_IFBLK:
+            return 'b'; /*block device*/
+        case S_IFDIR:
+            return 'd'; /*directorio */
+        case S_IFCHR:
+            return 'c'; /*char  device*/
+        case S_IFIFO:
+            return 'p'; /*pipe*/
+        default:
+            return '?'; /*desconocido, no deberia aparecer*/
     }
 }
 
-char *ConvierteModo(mode_t m, char * permisos) {
+char *ConvierteModo(mode_t m, char *permisos) {
     strcpy(permisos, "---------- ");
     permisos[0] = LetraTF(m);
     if (m & S_IRUSR) permisos[1] = 'r'; /*propietario*/
@@ -299,10 +301,10 @@ void cmd_crear(int chop_number, char *chops[]) {
                 return;
             }
         } else curr_dir();
-    } 
+    }
 }
 
-void delete(char *tr, int rec){
+void delete(char *tr, int rec) {
     struct stat pt;
     DIR *dir;
     struct dirent *entry;
@@ -323,8 +325,8 @@ void delete(char *tr, int rec){
                     printf("Cannot delete directory '%s': %s\n", tr, strerror(errno));
                     return;
                 } else {
-                    while((entry = readdir(dir)) != NULL) {
-                        if (entry -> d_name[0] == '.') continue;
+                    while ((entry = readdir(dir)) != NULL) {
+                        if (entry->d_name[0] == '.') continue;
                         strcpy(it, tr);
                         strcat(it, "/");
                         strcat(it, entry->d_name);
@@ -343,14 +345,14 @@ void delete(char *tr, int rec){
     }
 }
 
-void cmd_borrar(int chop_number, char * chops[]){
+void cmd_borrar(int chop_number, char *chops[]) {
     int i = 0;
 
     if (chops[0] == NULL) {
         curr_dir();
         return;
     } else {
-        while (chops[i] != NULL){
+        while (chops[i] != NULL) {
             delete(chops[i], 0);
             i++;
         }
@@ -367,7 +369,7 @@ void cmd_borrarrec(int chop_number, char *chops[]) {
         while (chops[it] != NULL) {
             delete(chops[it], 1);
             it++;
-        }    
+        }
     }
 }
 
@@ -383,7 +385,7 @@ char *get_info(struct stat pt, char *data, int link, int acc, char *path, char *
     sprintf(builder, "%3d ", (int) pt.st_nlink);
     strcat(data, builder);
     sprintf(builder, "(%8ld) ", (unsigned long) pt.st_ino);
-    strcat(data,builder);
+    strcat(data, builder);
     passwd = getpwuid(pt.st_uid);
     sprintf(builder, "%16s ", passwd->pw_name);
     strcat(data, builder);
@@ -395,7 +397,7 @@ char *get_info(struct stat pt, char *data, int link, int acc, char *path, char *
     sprintf(builder, "%9d ", (signed int) pt.st_size);
     strcat(data, builder);
     strcat(data, path);
-    if (S_ISLNK (pt.st_mode) && link){
+    if (S_ISLNK(pt.st_mode) && link) {
         readlink(fpath, builder, pt.st_size);
         builder[pt.st_size] = '\0';
         strcat(data, "->");
@@ -408,12 +410,12 @@ void listar(struct stat pt, int longL, int link, int acc, char *path, char *fpat
     char data[MAX];
 
     if (longL) {
-        printf("%s\n", get_info(pt, data, link, acc, path, fpath)); 
+        printf("%s\n", get_info(pt, data, link, acc, path, fpath));
     } else {
         sprintf(data, "%9d ", (signed int) pt.st_size);
         strcat(data, path);
         printf("%s\n", data);
-    }  
+    }
 }
 
 void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char *path);
@@ -430,18 +432,17 @@ void do_recursive(DIR *dir, int longL, int link, int acc, int hid, int recb, int
     struct stat pt;
 
     while ((content = readdir(dir)) != NULL) {
-        if((strcmp(content->d_name, ".") == 0) || (strcmp(content->d_name, "..") == 0)) continue;
+        if ((strcmp(content->d_name, ".") == 0) || (strcmp(content->d_name, "..") == 0)) continue;
         build_path(it, path, content->d_name);
         if (lstat(it, &pt) == -1) {
             printf("Cannot access '%s': %s\n", it, strerror(errno));
             continue;
-        }
-        else {
+        } else {
             if ((content->d_name[0] != '.' || hid) && (S_ISDIR(pt.st_mode))) {
                 listar_dir(longL, link, acc, hid, recb, reca, it);
-            }   
+            }
         }
-    }        
+    }
 }
 
 void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char *path) {
@@ -471,7 +472,7 @@ void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char 
                             printf("Cannot access '%s': %s\n", it, strerror(errno));
                             continue;
                         } else listar(pt, longL, link, acc, content->d_name, it);
-                    }   
+                    }
                 }
                 if (reca) {
                     rewinddir(dir);
@@ -482,7 +483,7 @@ void listar_dir(int longL, int link, int acc, int hid, int recb, int reca, char 
         } else {
             listar(pt, longL, link, acc, path, path);
         }
-    } 
+    }
 }
 
 void cmd_listfich(int chop_number, char *chops[]) {
@@ -495,7 +496,7 @@ void cmd_listfich(int chop_number, char *chops[]) {
         return;
     } else {
         for (int i = 0; chops[i] != NULL; i++) {
-            if (strcmp(chops[i], "-long") == 0){
+            if (strcmp(chops[i], "-long") == 0) {
                 longL = 1;
                 flags++;
             } else if (strcmp(chops[i], "-link") == 0) {
@@ -514,7 +515,8 @@ void cmd_listfich(int chop_number, char *chops[]) {
 
         for (int i = flags; i < chop_number; i++) {
             strcpy(path, chops[i]);
-            if (strncmp(chops[i], "/", 1) != 0 && strncmp(chops[i], "./", 2) != 0 && strncmp(chops[i], "../", 3) != 0 && strcmp(chops[i], ".") != 0 && strcmp(chops[i], "..") != 0) {
+            if (strncmp(chops[i], "/", 1) != 0 && strncmp(chops[i], "./", 2) != 0 && strncmp(chops[i], "../", 3) != 0 &&
+                strcmp(chops[i], ".") != 0 && strcmp(chops[i], "..") != 0) {
                 strcpy(path, "./");
                 strcat(path, chops[i]);
             } else {
@@ -537,7 +539,7 @@ void cmd_listdir(int chop_number, char *chops[]) {
         return;
     } else {
         for (int i = 0; chops[i] != NULL; i++) {
-            if (strcmp(chops[i], "-long") == 0){
+            if (strcmp(chops[i], "-long") == 0) {
                 longL = 1;
                 flags++;
             } else if (strcmp(chops[i], "-link") == 0) {
@@ -567,7 +569,8 @@ void cmd_listdir(int chop_number, char *chops[]) {
 
         for (int i = flags; i < chop_number; i++) {
             strcpy(path, chops[i]);
-            if (strncmp(chops[i], "/", 1) != 0 && strncmp(chops[i], "./", 2) != 0 && strncmp(chops[i], "../", 3) != 0 && strcmp(chops[i], ".") != 0 && strcmp(chops[i], "..") != 0) {
+            if (strncmp(chops[i], "/", 1) != 0 && strncmp(chops[i], "./", 2) != 0 && strncmp(chops[i], "../", 3) != 0 &&
+                strcmp(chops[i], ".") != 0 && strcmp(chops[i], "..") != 0) {
                 strcpy(path, "./");
                 strcat(path, chops[i]);
             } else {
@@ -578,10 +581,10 @@ void cmd_listdir(int chop_number, char *chops[]) {
     }
 }
 
-/* Lab Assignment 2 */ 
+/* Lab Assignment 2 */
 
 void malloc_free(size_t tam) {
-    Node* del;
+    Node *del;
     if ((del = findNodeBySize(tam, "malloc", memlist)) == NULL) {
         printf("There is no block of size %lu allocated with malloc\n", tam);
         return;
@@ -632,13 +635,13 @@ void cmd_malloc(int chop_number, char *chops[]) {
     }
 }
 
-void * MmapFichero(char * fichero, int protection) {
+void *MmapFichero(char *fichero, int protection) {
     int df, map = MAP_PRIVATE, modo = O_RDONLY;
     struct stat s;
-    void * p;
+    void *p;
     Node node;
     if (protection & PROT_WRITE) modo = O_RDWR;
-    if (stat(fichero, & s) == -1 || (df = open(fichero, modo)) == -1)
+    if (stat(fichero, &s) == -1 || (df = open(fichero, modo)) == -1)
         return NULL;
     if ((p = mmap(NULL, s.st_size, protection, map, df, 0)) == MAP_FAILED)
         return NULL;
@@ -653,7 +656,7 @@ void * MmapFichero(char * fichero, int protection) {
 }
 
 void mmap_free(char *name) {
-    Node* del;
+    Node *del;
     if ((del = findNodeByName(name, "mapped file", memlist)) == NULL) {
         printf("File %s not mapped\n", name);
     } else {
@@ -676,7 +679,7 @@ void mmap_free(char *name) {
 void cmd_mmap(int chop_number, char *chops[]) {
     int protection = 0;
     char *perm;
-    void * p;
+    void *p;
     if (chops[0] == NULL || ((chop_number == 1) & (strcmp(chops[0], "-free") == 0))) {
         printf("----------- List of mmap allocated blocks for process: %d -----------\n", getpid());
         showNodes(memlist, "mapped file");
@@ -697,8 +700,8 @@ void cmd_mmap(int chop_number, char *chops[]) {
     }
 }
 
-void * ObtenerMemoriaShmget(key_t clave, size_t tam) {
-    void * p;
+void *ObtenerMemoriaShmget(key_t clave, size_t tam) {
+    void *p;
     int aux, id, flags = 0777;
     struct shmid_ds s;
     Node node;
@@ -710,14 +713,14 @@ void * ObtenerMemoriaShmget(key_t clave, size_t tam) {
     }
     if ((id = shmget(clave, tam, flags)) == -1)
         return (NULL);
-    if ((p = shmat(id, NULL, 0)) == (void * ) - 1) {
+    if ((p = shmat(id, NULL, 0)) == (void *) -1) {
         aux = errno;
         if (tam)
             shmctl(id, IPC_RMID, NULL);
         errno = aux;
         return (NULL);
     }
-    shmctl(id, IPC_STAT, & s);
+    shmctl(id, IPC_STAT, &s);
     node.address = p;
     node.size = s.shm_segsz;
     node.time = time(NULL);
@@ -728,7 +731,7 @@ void * ObtenerMemoriaShmget(key_t clave, size_t tam) {
 }
 
 void free_shared(key_t key) {
-    Node* del;
+    Node *del;
     if ((del = findNodeByKey(key, "shared memory", memlist)) == NULL) {
         printf("There is no block with that key in the process\n");
     } else {
@@ -759,12 +762,13 @@ void delete_key(key_t key) {
 }
 
 // COMPROBAR EXCEPCIONES DE LAS FUNCIONES
-void cmd_shared(int chop_number, char* chops[]) {
+void cmd_shared(int chop_number, char *chops[]) {
     key_t k;
     size_t tam = 0;
-    void * p;
+    void *p;
     char *aux_tam, *aux_key;
-    if (chops[0] == NULL || (chop_number == 1) & (strcmp(chops[0], "-free") == 0) || (chop_number <= 2) & (strcmp(chops[0], "-create") == 0)) {
+    if (chops[0] == NULL || (chop_number == 1) & (strcmp(chops[0], "-free") == 0) ||
+        (chop_number <= 2) & (strcmp(chops[0], "-create") == 0)) {
         printf("----------- List of shared allocated blocks for process: %d -----------\n", getpid());
         showNodes(memlist, "shared memory");
     } else {
@@ -799,8 +803,8 @@ void cmd_shared(int chop_number, char* chops[]) {
     }
 }
 
-void cmd_dealloc(int chop_number, char* chops[]) {
-    Node* del;
+void cmd_dealloc(int chop_number, char *chops[]) {
+    Node *del;
     int tam;
     if (chops[0] == NULL) {
         printf("----------- List of allocated blocks for process: %d -----------\n", getpid());
@@ -879,7 +883,7 @@ void memoria_funcs() {
 void dopmap() {
     pid_t pid;
     char elpid[32];
-    char * argv[3] = {
+    char *argv[3] = {
             "pmap",
             elpid,
             NULL
@@ -897,7 +901,7 @@ void dopmap() {
     waitpid(pid, NULL, 0);
 }
 
-void cmd_memoria(int chop_number, char* chops[]) {
+void cmd_memoria(int chop_number, char *chops[]) {
     if (chops[0] == NULL || strcmp(chops[0], "-all") == 0) {
         printf("----------- List of allocated blocks for process: %d -----------\n", getpid());
         showNodes(memlist, "-all");
@@ -921,19 +925,19 @@ void cmd_memoria(int chop_number, char* chops[]) {
 
 void cmd_volcarmem(int chop_number, char *chops[]) {
     int cont = 25, remain = 25, loop_cycles = 25;
-    char* address;
+    char *address;
     char character;
     if (chops[0] == NULL) {
         printf("Missing memory address to dump\n");
     } else {
-        address = (void*) strtoul(chops[0], NULL, 16);
+        address = (void *) strtoul(chops[0], NULL, 16);
         if (chops[1] != NULL) {
             cont = atoi(chops[1]);
             remain = cont;
             if (cont < 25) loop_cycles = cont;
         }
         printf("Dump %d bytes from address %p\n", cont, address);
-        for (int i = 0; i < cont; i+=25) {
+        for (int i = 0; i < cont; i += 25) {
             if (remain == 0) break;
             for (int j = 0; j < loop_cycles; j++) {
                 character = *(i + j + address);
@@ -955,13 +959,13 @@ void cmd_volcarmem(int chop_number, char *chops[]) {
 }
 
 void cmd_llenarmem(int chop_number, char *chops[]) {
-    char* address;
+    char *address;
     int cont = 128;
     char default_byte = 'A';
     if (chops[0] == NULL) {
         printf("Missing memory address to fill\n");
     } else {
-        address = (void*) strtoul(chops[0], NULL, 16);
+        address = (void *) strtoul(chops[0], NULL, 16);
         if (chops[1] != NULL) {
             if ((chop_number == 2) & (strncmp(chops[1], "0x", 2) == 0 || strncmp(chops[1], "0X", 2) == 0))
                 default_byte = strtoul(chops[1], NULL, 16);
@@ -970,31 +974,32 @@ void cmd_llenarmem(int chop_number, char *chops[]) {
         if (chop_number == 3)
             default_byte = strtoul(chops[2], NULL, 16);
         for (int i = 0; i < cont; i++) address[i] = default_byte;
-        printf("Filling %d bytes from address %p with %c(%x)\n", cont, address, default_byte, (unsigned char) default_byte);
+        printf("Filling %d bytes from address %p with %c(%x)\n", cont, address, default_byte,
+               (unsigned char) default_byte);
     }
 }
 
 void recursive(int n) {
     char automatic[RSIZE];
     static char estatic[RSIZE];
-    printf ("parameter n:%d in %p\n", n, &n);
-    printf ("static array in:%p \n", estatic);
-    printf ("automatic array in %p\n", automatic);
+    printf("parameter n:%d in %p\n", n, &n);
+    printf("static array in:%p \n", estatic);
+    printf("automatic array in %p\n", automatic);
     n--;
     if (n > 0) recursive(n);
 }
 
 void cmd_recursiva(int chop_number, char *chops[]) {
     int aux = atoi(chops[0]);
-    if (aux > 0) recursive (aux);
+    if (aux > 0) recursive(aux);
     else printf("Error: 'n' must be a number greater than 0\n");
 }
 
-ssize_t LeerFichero(char * fich, void * p, ssize_t n) {
+ssize_t LeerFichero(char *fich, void *p, ssize_t n) {
     ssize_t nleidos, tam = n;
     int df, aux;
     struct stat s;
-    if (stat(fich, & s) == -1 || (df = open(fich, O_RDONLY)) == -1)
+    if (stat(fich, &s) == -1 || (df = open(fich, O_RDONLY)) == -1)
         return ((ssize_t) - 1);
     if (n == LEERCOMPLETO)
         tam = (ssize_t) s.st_size;
@@ -1012,24 +1017,22 @@ void do_write(int chop_number, char *chops[]) {
     ssize_t cont;
     char *addr;
     int o = 0, fd, flags = O_CREAT | O_EXCL | O_WRONLY;
-    if (chop_number < 3){
+    if (chop_number < 3) {
         printf("Missing parameters\n");
-    }
-    else {
+    } else {
         if (strcmp(chops[0], "-o") == 0) {
             flags = O_CREAT | O_WRONLY | O_TRUNC;
             o = 1;
         }
-        cont = (ssize_t) atoi(chops[2+o]);
-        addr = (char *) strtoul(chops[1+o], NULL, 16);
-        if ((fd = open(chops[0+o], flags, 0744)) == -1) {
+        cont = (ssize_t) atoi(chops[2 + o]);
+        addr = (char *) strtoul(chops[1 + o], NULL, 16);
+        if ((fd = open(chops[0 + o], flags, 0744)) == -1) {
             perror("Cannot open or create file");
-        }
-        else{
+        } else {
             if (write(fd, addr, cont) == -1) {
                 perror("Cannot write file");
             } else {
-                printf("%d bytes written into file %s\n", (int) cont, chops[0+o]);
+                printf("%d bytes written into file %s\n", (int) cont, chops[0 + o]);
             }
             close(fd);
         }
@@ -1038,11 +1041,10 @@ void do_write(int chop_number, char *chops[]) {
 
 void do_read(int chop_number, char *chops[]) {
     ssize_t size, cont = LEERCOMPLETO;
-    char* addr;
+    char *addr;
     if (chop_number < 2) {
         printf("Missing parameters\n");
-    }
-    else {
+    } else {
         if (chops[2] != NULL) {
             cont = (ssize_t) atoi(chops[2]);
         }
@@ -1068,32 +1070,32 @@ void cmd_es(int chop_number, char *chops[]) {
 }
 
 struct CMD c[] = {
-    {"autores", cmd_autores},
-    {"pid", cmd_pid},
-    {"carpeta", cmd_carpeta},
-    {"fecha", cmd_fecha},
-    {"hist", cmd_hist},
-    {"comando", cmd_comando},
-    {"infosis", cmd_uname},
-    {"ayuda", cmd_ayuda},
-    {"fin", cmd_bye},
-    {"salir", cmd_bye},
-    {"bye", cmd_bye},
-    {"crear", cmd_crear},
-    {"borrar", cmd_borrar},
-    {"borrarrec", cmd_borrarrec},
-    {"listfich", cmd_listfich},
-    {"listdir", cmd_listdir},
-    {"malloc", cmd_malloc},
-    {"mmap", cmd_mmap},
-    {"shared", cmd_shared},
-    {"dealloc", cmd_dealloc},
-    {"memoria", cmd_memoria},
-    {"volcarmem", cmd_volcarmem},
-    {"llenarmem", cmd_llenarmem},
-    {"recursiva", cmd_recursiva},
-    {"e-s", cmd_es},
-    {NULL, NULL}
+        {"autores",   cmd_autores},
+        {"pid",       cmd_pid},
+        {"carpeta",   cmd_carpeta},
+        {"fecha",     cmd_fecha},
+        {"hist",      cmd_hist},
+        {"comando",   cmd_comando},
+        {"infosis",   cmd_uname},
+        {"ayuda",     cmd_ayuda},
+        {"fin",       cmd_bye},
+        {"salir",     cmd_bye},
+        {"bye",       cmd_bye},
+        {"crear",     cmd_crear},
+        {"borrar",    cmd_borrar},
+        {"borrarrec", cmd_borrarrec},
+        {"listfich",  cmd_listfich},
+        {"listdir",   cmd_listdir},
+        {"malloc",    cmd_malloc},
+        {"mmap",      cmd_mmap},
+        {"shared",    cmd_shared},
+        {"dealloc",   cmd_dealloc},
+        {"memoria",   cmd_memoria},
+        {"volcarmem", cmd_volcarmem},
+        {"llenarmem", cmd_llenarmem},
+        {"recursiva", cmd_recursiva},
+        {"e-s",       cmd_es},
+        {NULL,        NULL}
 };
 
 int chop_input(char *cadena, char *trozos[]) {
@@ -1105,7 +1107,7 @@ int chop_input(char *cadena, char *trozos[]) {
 
 void process_input(int chop_number, char *chops[]) {
     for (int i = 0; c[i].name != NULL; i++) {
-        if(strcmp(chops[0], c[i].name) == 0) {
+        if (strcmp(chops[0], c[i].name) == 0) {
             (*c[i].pf)(chop_number - 1, chops + 1);
             return;
         }
@@ -1115,7 +1117,7 @@ void process_input(int chop_number, char *chops[]) {
 
 int main() {
     char user_input[MAX];
-    char *chops[MAX/2];
+    char *chops[MAX / 2];
     int chop_number;
 
     createEmptyHistory(&hist);
