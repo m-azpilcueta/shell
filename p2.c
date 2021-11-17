@@ -1013,7 +1013,35 @@ ssize_t LeerFichero(char * fich, void * p, ssize_t n) {
 }
 
 void do_write(int chop_number, char *chops[]) {
+    ssize_t cont;
+    char *addr;
+    int o = 0;
+    int fd;
+    int flags = O_CREAT | O_EXCL | O_WRONLY | O_APPEND;
+    if (chop_number < 3){
+        printf("Missing parameters\n");
+    }
+    else{
+        if (strcmp(chops[0], "-o")==0){
+            flags = O_CREAT | O_WRONLY | O_TRUNC;
+            o=1;
+        }
+        cont = (ssize_t) atoi(chops[2+o]);
+        addr = (char *)strtoul(chops[1+o], NULL, 16);
 
+        if ((fd=open(chops[0+o], flags, 0744))==-1){
+            perror("cannot open or create file");
+        }
+        else{
+            if (write(fd, addr, cont)==-1){
+                perror("cannnot write");
+            }
+            else{
+                printf("%d Bytes written into file %s\n", (int)cont, chops[0+o]);
+            }
+        close(fd);
+        }
+    }
 }
 
 void do_read(int chop_number, char *chops[]) {
