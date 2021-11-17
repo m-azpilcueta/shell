@@ -61,11 +61,14 @@ struct ayuda a[] = {
     {"malloc", "malloc [-free] tam      Allocates (or deallocates) memory in the program"},
     {"mmap", "mmap [-free] fich [perm]        Map (or unmaps) files in the process address space"},
     {"shared", "shared [-free | -create | -delkey] cl [tam]     Allocates (or deallocates) shared memory in the program"},
-    {"dealloc", "dealloc [-malloc| -shared| -mmap]....       Deallocates a memory block allocated with malloc, shared or mmap"},
+    {"dealloc", "dealloc [-malloc | -shared| -mmap]....       Deallocates a memory block allocated with malloc, shared or mmap"},
     {"memoria", "memoria [-blocks| -funcs| -vars| -all| -pmap]...       Shows details of the memory of the process"},
     {"volcarmem", "volcarmem addr [cont]      Dump on the screen the contents (cont bytes) of memory address addr"},
     {"llenarmem", "llenarmem addr [cont] [byte]     Fills memory with byte from addr"},
     {"recursiva", "recursiva [n]   Calls recursive function n times"},
+    {"e-s", "e-s [read|write] [-o] fich addr cont\n"
+            "With read, reads cont bytes from file fich into address addr\n"
+            "With write, writes cont bytes from memory address addr into file fich"},
     {NULL, NULL}
 };
 
@@ -971,7 +974,7 @@ void cmd_llenarmem(int chop_number, char *chops[]) {
     }
 }
 
-void recursive (int n){
+void recursive(int n) {
   char automatic[RSIZE];
   static char estatic[RSIZE];
   printf ("parameter n:%d in %p\n",n,&n);
@@ -983,7 +986,7 @@ void recursive (int n){
 }
 
 
-void cmd_recursiva(int chop_number, char *chops[]){
+void cmd_recursiva(int chop_number, char *chops[]) {
   int aux = atoi(chops[0]);
   if (aux>0)          //the input is checked for validation
     recursive (aux);
@@ -1007,6 +1010,26 @@ ssize_t LeerFichero(char * fich, void * p, ssize_t n) {
     }
     close(df);
     return (nleidos);
+}
+
+void do_write(int chop_number, char *chops[]) {
+
+}
+
+void do_read(int chop_number, char *chops[]) {
+
+}
+
+void cmd_es(int chop_number, char *chops[]) {
+    if (chops[0] == NULL || ((strcmp(chops[0], "read") != 0) & (strcmp(chops[0], "write") != 0))) {
+        printf("Usage: e-s [read | write] ......\n");
+    } else {
+        if (strcmp(chops[0], "read") == 0) {
+            do_read(chop_number - 1, chops + 1);
+        } else {
+            do_write(chop_number - 1, chops + 1);
+        }
+    }
 }
 
 struct CMD c[] = {
@@ -1034,6 +1057,7 @@ struct CMD c[] = {
     {"volcarmem", cmd_volcarmem},
     {"llenarmem", cmd_llenarmem},
     {"recursiva", cmd_recursiva},
+    {"e-s", cmd_es},
     {NULL, NULL}
 };
 
