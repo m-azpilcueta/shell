@@ -587,7 +587,6 @@ void malloc_free(size_t tam) {
     Node *del;
     if ((del = findNodeBySize(tam, "malloc", memlist)) == NULL) {
         printf("There is no block of size %lu allocated with malloc\n", tam);
-        return;
     } else {
         free(del->address);
         if (!removeNode(*del, &memlist)) {
@@ -607,18 +606,15 @@ void cmd_malloc(int chop_number, char *chops[]) {
         if (strcmp(chops[0], "-free") == 0) {
             if ((tam = atoi(chops[1])) == 0) {
                 printf("Cannot deallocate blocks of %d bytes\n", tam);
-                return;
             } else {
                 malloc_free((size_t) tam);
             }
         } else {
             if ((tam = atoi(chops[0])) == 0) {
                 printf("Cannot allocate blocks of %d bytes\n", tam);
-                return;
             } else {
                 if ((address = malloc((size_t) tam)) == NULL) {
                     perror("Cannot allocate");
-                    return;
                 } else {
                     node.address = address;
                     strcpy(node.alloc_type, "malloc");
@@ -662,11 +658,9 @@ void mmap_free(char *name) {
     } else {
         if (munmap(del->address, del->size) == -1) {
             perror("Could not unmap file");
-            return;
         } else {
             if (close(del->key) == -1) {
                 perror("Could not close file");
-                return;
             } else {
                 if (!removeNode(*del, &memlist)) {
                     printf("Could not delete from block list\n");
@@ -775,7 +769,6 @@ void cmd_shared(int chop_number, char *chops[]) {
         if (strcmp(chops[0], "-delkey") == 0) {
             if (chops[1] == NULL) {
                 printf("shared -delkey needs a valid key\n");
-                return;
             } else {
                 delete_key((key_t) strtoul(chops[1], NULL, 10));
             }
@@ -817,7 +810,6 @@ void cmd_dealloc(int chop_number, char *chops[]) {
             } else {
                 if ((tam = atoi(chops[1])) == 0) {
                     printf("Cannot deallocate blocks of %d bytes\n", tam);
-                    return;
                 } else {
                     malloc_free((size_t) tam);
                 }
@@ -1131,7 +1123,6 @@ int main() {
             process_input(chop_number, chops);
         }
     }
-
-    deleteHistory(&hist);
+    
     return 0;
 }
