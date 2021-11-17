@@ -1045,7 +1045,24 @@ void do_write(int chop_number, char *chops[]) {
 }
 
 void do_read(int chop_number, char *chops[]) {
-
+    ssize_t size;
+    ssize_t cont = LEERCOMPLETO;
+    char* addr;
+    if (chop_number < 2){
+        printf("Missing parameters\n");
+    }
+    else{
+        if (chops[2]!=NULL){
+            cont = (ssize_t)atoi(chops[2]); 
+        }
+        addr = (char *)strtoul(chops[1], NULL, 16);
+        if ((size = LeerFichero(chops[0], addr, cont))==-1){
+            perror("Cannot read");
+        }
+        else{
+            printf("%d Bytes read from file %s\n",(int) size, chops[0]);
+        }
+    }
 }
 
 void cmd_es(int chop_number, char *chops[]) {
