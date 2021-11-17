@@ -1,0 +1,11 @@
+P1:
+- En la funcion get_info hay un SEGV -> Debemos comprobar si el grupo y passwd devuelven NULL. Caso en el que el usuario y grupo es un número.
+- El array ayuda no tiene sentido ahí, se puede incluir como otro campo en el array que procesa los comandos. 
+- Demasiados return; : El tema es que obviamente si hay if-else, el return es innecesario.
+
+Preguntas que nos hizo:
+- Por qué daba el SEGV en get_info
+- Qué pasa si en vez de lstat hubiesemos puesto stat
+
+'Good code'
+37 % Copia
