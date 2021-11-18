@@ -655,6 +655,7 @@ void mmap_free(char *name) {
     Node *del;
     if ((del = findNodeByName(name, "mapped file", memlist)) == NULL) {
         printf("File %s not mapped\n", name);
+        showNodes(memlist, "mapped file");
     } else {
         if (munmap(del->address, del->size) == -1) {
             perror("Could not unmap file");
