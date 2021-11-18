@@ -755,7 +755,6 @@ void delete_key(key_t key) {
     }
 }
 
-// COMPROBAR EXCEPCIONES DE LAS FUNCIONES
 void cmd_shared(int chop_number, char *chops[]) {
     key_t k;
     size_t tam = 0;
