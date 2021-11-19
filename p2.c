@@ -983,13 +983,22 @@ void recursive(int n) {
     printf("static array in:%p \n", estatic);
     printf("automatic array in %p\n", automatic);
     n--;
-    if (n > 0) recursive(n);
+    if (n >= 0) recursive(n);
 }
 
 void cmd_recursiva(int chop_number, char *chops[]) {
-    int aux = atoi(chops[0]);
-    if (aux > 0) recursive(aux);
-    else printf("Error: 'n' must be a number greater than 0\n");
+    int param;
+    char *remain;
+    if (chops[0] == NULL) printf("Missing parameter\n");
+    else {
+        param = strtoul(chops[0], &remain, 10);
+        if (remain == chops[0]) {
+            printf("Parameter must be a number\n");
+            return;
+        }
+        if (param >= 0) recursive(param);
+        else printf("Parameter must be a number greater than or equal to 0\n");
+    }
 }
 
 ssize_t LeerFichero(char *fich, void *p, ssize_t n) {
