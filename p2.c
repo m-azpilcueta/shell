@@ -596,7 +596,7 @@ void malloc_free(size_t tam) {
 }
 
 void cmd_malloc(int chop_number, char *chops[]) {
-    int tam;
+    size_t tam;
     void *address;
     Node node;
     if (chops[0] == NULL || ((chop_number == 1) & (strcmp(chops[0], "-free") == 0))) {
@@ -604,16 +604,16 @@ void cmd_malloc(int chop_number, char *chops[]) {
         showNodes(memlist, "malloc");
     } else {
         if (strcmp(chops[0], "-free") == 0) {
-            if ((tam = atoi(chops[1])) == 0) {
-                printf("Cannot deallocate blocks of %d bytes\n", tam);
+            if ((tam = (size_t) atoll(chops[1])) == 0) {
+                printf("Cannot deallocate blocks of %ld bytes\n", tam);
             } else {
-                malloc_free((size_t) tam);
+                malloc_free(tam);
             }
         } else {
-            if ((tam = atoi(chops[0])) == 0) {
-                printf("Cannot allocate blocks of %d bytes\n", tam);
+            if ((tam = (size_t) atoll(chops[0])) == 0) {
+                printf("Cannot allocate blocks of %ld bytes\n", tam);
             } else {
-                if ((address = malloc((size_t) tam)) == NULL) {
+                if ((address = malloc(tam)) == NULL) {
                     perror("Cannot allocate");
                 } else {
                     node.address = address;
@@ -798,7 +798,7 @@ void cmd_shared(int chop_number, char *chops[]) {
 
 void cmd_dealloc(int chop_number, char *chops[]) {
     Node *del;
-    int tam;
+    size_t tam;
     if (chops[0] == NULL) {
         printf("----------- List of allocated blocks for process: %d -----------\n", getpid());
         showNodes(memlist, "-all");
@@ -808,10 +808,10 @@ void cmd_dealloc(int chop_number, char *chops[]) {
                 printf("----------- List of malloc allocated blocks for process: %d -----------\n", getpid());
                 showNodes(memlist, "malloc");
             } else {
-                if ((tam = atoi(chops[1])) == 0) {
-                    printf("Cannot deallocate blocks of %d bytes\n", tam);
+                if ((tam = (size_t) atoll(chops[1])) == 0) {
+                    printf("Cannot deallocate blocks of %ld bytes\n", tam);
                 } else {
-                    malloc_free((size_t) tam);
+                    malloc_free(tam);
                 }
             }
         } else if (strcmp(chops[0], "-shared") == 0) {
