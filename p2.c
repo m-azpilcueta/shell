@@ -927,7 +927,7 @@ void cmd_volcarmem(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         printf("Missing memory address to dump\n");
     } else {
-        address = (void *) strtoul(chops[0], NULL, 16);
+        address = (char *) strtoul(chops[0], NULL, 16);
         if (chops[1] != NULL) {
             cont = atoi(chops[1]);
             remain = cont;
@@ -962,7 +962,7 @@ void cmd_llenarmem(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         printf("Missing memory address to fill\n");
     } else {
-        address = (void *) strtoul(chops[0], NULL, 16);
+        address = (char *) strtoul(chops[0], NULL, 16);
         if (chops[1] != NULL) {
             if ((chop_number == 2) & (strncmp(chops[1], "0x", 2) == 0 || strncmp(chops[1], "0X", 2) == 0))
                 default_byte = strtoul(chops[1], NULL, 16);
