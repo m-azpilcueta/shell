@@ -587,6 +587,8 @@ void malloc_free(size_t tam) {
     Node *del;
     if ((del = findNodeBySize(tam, "malloc", memlist)) == NULL) {
         printf("There is no block of size %lu allocated with malloc\n", tam);
+        printf("----------- Malloc allocated block list for process: %d -----------\n", getpid());
+        showNodes(memlist, "malloc");
     } else {
         free(del->address);
         if (!removeNode(*del, &memlist)) {
@@ -655,6 +657,7 @@ void mmap_free(char *name) {
     Node *del;
     if ((del = findNodeByName(name, "mapped file", memlist)) == NULL) {
         printf("File %s not mapped\n", name);
+        printf("----------- List of mmap allocated blocks for process: %d -----------\n", getpid());
         showNodes(memlist, "mapped file");
     } else {
         if (munmap(del->address, del->size) == -1) {
@@ -729,6 +732,8 @@ void free_shared(key_t key) {
     Node *del;
     if ((del = findNodeByKey(key, "shared memory", memlist)) == NULL) {
         printf("There is no block with that key in the process\n");
+        printf("----------- List of shared allocated blocks for process: %d -----------\n", getpid());
+        showNodes(memlist, "shared memory");
     } else {
         if (shmdt(del->address) == -1) {
             perror("Cannot free memory");
@@ -862,9 +867,9 @@ void memoria_vars() {
 
 void memoria_funcs() {
     printf("----------- Program Functions -----------\n");
-    printf("malloc function: %p\n", cmd_malloc);
-    printf("shared function: %p\n", cmd_shared);
-    printf("mmap function: %p\n", cmd_mmap);
+    printf("cmd_malloc function: %p\n", cmd_malloc);
+    printf("cmd_shared function: %p\n", cmd_shared);
+    printf("cmd_mmap function: %p\n", cmd_mmap);
     printf("\n");
     printf("----------- Library Functions -----------\n");
     printf("strdup function: %p\n", strdup);
@@ -941,7 +946,7 @@ void cmd_volcarmem(int chop_number, char *chops[]) {
             printf("\n");
             for (int j = 0; j < loop_cycles; j++) {
                 character = *(i + j + address);
-                printf(" %02x ", (unsigned char) character);
+                printf(" %02X ", (unsigned char) character);
                 remain--;
             }
             if (remain < 25) loop_cycles = remain;
