@@ -19,6 +19,7 @@
 #include <sys/mman.h>
 #include <sys/shm.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 #include "list.h"
 #include "memlist.h"
 
@@ -69,6 +70,7 @@ struct ayuda a[] = {
         {"e-s",       "e-s [read|write] [-o] fich addr cont\n"
                       "With read, reads cont bytes from file fich into address addr\n"
                       "With write, writes cont bytes from memory address addr into file fich"},
+        {"priority", "priority [pid] [valor]    Shows or changes the priority of process pid to valor"},
         {NULL,        NULL}
 };
 
@@ -223,7 +225,8 @@ void cmd_ayuda(int chop_number, char *chops[]) {
     if (chops[0] == NULL) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
-               "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria\n");
+               "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
+               "priority \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1075,6 +1078,33 @@ void cmd_es(int chop_number, char *chops[]) {
     }
 }
 
+/* Lab Assignment 3 */
+
+void cmd_priority(int chop_number, char *chops[]) {
+    int priority;
+    int pid;
+    if (chop_number < 1) {
+        if ((priority = getpriority(PRIO_PROCESS, getpid())) == -1 ) {
+            perror("Cannot get priority");
+        } else
+            printf("The priority of process %d is %d\n", getpid(), priority);
+    } else {
+        if (chop_number == 1) {
+            pid = atoi(chops[0]);
+            if ((priority = getpriority(PRIO_PROCESS, pid)) == -1 ) {
+                perror("Cannot get priority");
+            } else
+                printf("The priority of process %d is %d\n", pid, priority);
+        } else if (chop_number >= 2) {
+            pid = atoi(chops[0]);
+            priority = atoi(chops[1]);
+            if (setpriority(PRIO_PROCESS, pid, priority) == -1) {
+                perror("Cannot set priority");
+            }
+        }
+    }
+}
+
 struct CMD c[] = {
         {"autores",   cmd_autores},
         {"pid",       cmd_pid},
@@ -1101,6 +1131,7 @@ struct CMD c[] = {
         {"llenarmem", cmd_llenarmem},
         {"recursiva", cmd_recursiva},
         {"e-s",       cmd_es},
+        {"priority", cmd_priority},
         {NULL,        NULL}
 };
 
