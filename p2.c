@@ -31,6 +31,7 @@ tHist hist;
 tMemList memlist;
 int rec_counter = 0;
 int global1 = 1, global2 = 2, global3 = 3;
+int saved_stderr;
 
 struct CMD {
     char *name;
@@ -71,6 +72,7 @@ struct ayuda a[] = {
                       "With read, reads cont bytes from file fich into address addr\n"
                       "With write, writes cont bytes from memory address addr into file fich"},
         {"priority", "priority [pid] [valor]    Shows or changes the priority of process pid to valor"},
+        {"rederr", "rederr [-reset] [fich]    Redirects the standard error of the shell"},
         {NULL,        NULL}
 };
 
@@ -226,7 +228,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority \n");
+               "priority rederr \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1105,6 +1107,36 @@ void cmd_priority(int chop_number, char *chops[]) {
     }
 }
 
+void cmd_rederr(int chop_number, char* chops[]) {
+    char path[255], filename[255] = "";
+    int fd;
+    if (chops[0] == NULL) {
+        sprintf(path, "/proc/%d/fd/2", getpid());
+        if (readlink(path, filename, sizeof(filename) - 1) == -1) {
+            perror("Could not get location of standard error file");
+        } else {
+            filename[sizeof(filename) - 1] = '\0';
+            if (strcmp(filename, "/dev/pts/0") == 0) printf("Standard error is in the original configuration file\n");
+            else printf("Standard error is in file: %s\n", filename);
+        }
+    } else if (strcmp(chops[0], "-reset") == 0) {
+        if (dup2(saved_stderr, STDERR_FILENO) == -1) {
+            perror("Could not reset standard error");
+        }
+        close(saved_stderr);
+    } else {
+        if ((fd = open(chops[0], O_CREAT | O_EXCL | O_WRONLY, 0744)) == -1) {
+            perror("Could not open file to redirect");
+        } else {
+            saved_stderr = dup(STDERR_FILENO);
+            if (dup2(fd, STDERR_FILENO) == -1) {
+                perror("Could not redirect standard error");
+            }
+            close(fd);
+        }
+    }
+}
+
 struct CMD c[] = {
         {"autores",   cmd_autores},
         {"pid",       cmd_pid},
@@ -1132,6 +1164,7 @@ struct CMD c[] = {
         {"recursiva", cmd_recursiva},
         {"e-s",       cmd_es},
         {"priority", cmd_priority},
+        {"rederr", cmd_rederr},
         {NULL,        NULL}
 };
 
