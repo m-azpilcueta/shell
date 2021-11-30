@@ -76,6 +76,7 @@ struct ayuda a[] = {
         {"priority", "priority [pid] [valor]    Shows or changes the priority of process pid to valor"},
         {"rederr", "rederr [-reset] [fich]    Redirects the standard error of the shell"},
         {"entorno", "entorno [-environ | -addr]     Muestra el entorno del proceso"},
+        {"mostrarvar", "Shows value and addresses of an environment variable"},
         {NULL,        NULL}
 };
 
@@ -231,7 +232,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno\n");
+               "priority rederr entorno mostrarvar \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1160,6 +1161,39 @@ void cmd_entorno(int chop_number, char* chops[]) {
     }
 }
 
+int BuscarVariable(char *var, char *e[]) {
+    int pos = 0;
+    char aux[MAX];
+    strcpy(aux, var);
+    strcat(aux, "=");
+    while (e[pos] != NULL)
+        if (!strncmp(e[pos], aux, strlen(aux)))
+            return (pos);
+        else
+            pos++;
+    errno = ENOENT;
+    return (-1);
+}
+
+void cmd_mostrarvar(int chop_number, char *chops[]) {
+    int pos;
+    char *envV;
+    if (chops[0] == NULL) MostrarEntorno(main3, "main arg3");
+    else {
+        if ((pos = BuscarVariable(chops[0], main3)) == -1) {
+            perror("Could not show var");
+        } else {
+            printf("With environ: %s (%p) @%p\n", environ[pos], environ[pos], &environ[pos]);
+            printf("\tWith main arg3: %s (%p) @%p\n", main3[pos], main3[pos], &main3[pos]);
+            if ((envV = getenv(chops[0])) == NULL) {
+                printf("Could not find environment variable\n");
+            } else {
+                printf("\t\tWith getenv: %s (%p)\n", envV, &envV);
+            }
+        }
+    }
+}
+
 struct CMD c[] = {
         {"autores",   cmd_autores},
         {"pid",       cmd_pid},
@@ -1189,6 +1223,7 @@ struct CMD c[] = {
         {"priority", cmd_priority},
         {"rederr", cmd_rederr},
         {"entorno", cmd_entorno},
+        {"mostrarvar", cmd_mostrarvar},
         {NULL,        NULL}
 };
 
