@@ -32,6 +32,8 @@ tMemList memlist;
 int rec_counter = 0;
 int global1 = 1, global2 = 2, global3 = 3;
 int saved_stderr;
+char** main3;
+extern char ** environ;
 
 struct CMD {
     char *name;
@@ -73,6 +75,7 @@ struct ayuda a[] = {
                       "With write, writes cont bytes from memory address addr into file fich"},
         {"priority", "priority [pid] [valor]    Shows or changes the priority of process pid to valor"},
         {"rederr", "rederr [-reset] [fich]    Redirects the standard error of the shell"},
+        {"entorno", "entorno [-environ | -addr]     Muestra el entorno del proceso"},
         {NULL,        NULL}
 };
 
@@ -228,7 +231,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr \n");
+               "priority rederr entorno\n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1137,6 +1140,26 @@ void cmd_rederr(int chop_number, char* chops[]) {
     }
 }
 
+void MostrarEntorno(char ** entorno, char * nombre_entorno) {
+    int i = 0;
+    while (entorno[i] != NULL) {
+        printf("%p->%s[%d]=(%p) %s\n", &entorno[i],
+               nombre_entorno, i, entorno[i], entorno[i]);
+        i++;
+    }
+}
+
+void cmd_entorno(int chop_number, char* chops[]) {
+    if (chops[0] == NULL)
+        MostrarEntorno(main3, "main arg3");
+    else if (strcmp(chops[0], "-environ") == 0)
+        MostrarEntorno(environ, "environ");
+    else if (strcmp(chops[0], "-addr") == 0) {
+        printf("environ: %p (stored at %p)\n", environ, &environ);
+        printf("main arg3: %p (stored at %p)\n", main3, &main3);
+    }
+}
+
 struct CMD c[] = {
         {"autores",   cmd_autores},
         {"pid",       cmd_pid},
@@ -1165,6 +1188,7 @@ struct CMD c[] = {
         {"e-s",       cmd_es},
         {"priority", cmd_priority},
         {"rederr", cmd_rederr},
+        {"entorno", cmd_entorno},
         {NULL,        NULL}
 };
 
@@ -1185,10 +1209,11 @@ void process_input(int chop_number, char *chops[]) {
     printf("Command '%s' not found\n", chops[0]);
 }
 
-int main() {
+int main(int argc, char *argv[], char **envp) {
     char user_input[MAX];
     char *chops[MAX / 2];
     int chop_number;
+    main3 = envp;
 
     createEmptyHistory(&hist);
     createEmptyMemlist(&memlist);
