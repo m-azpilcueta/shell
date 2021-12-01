@@ -77,6 +77,7 @@ struct ayuda a[] = {
         {"rederr", "rederr [-reset] [fich]    Redirects the standard error of the shell"},
         {"entorno", "entorno [-environ | -addr]     Muestra el entorno del proceso"},
         {"mostrarvar", "Shows value and addresses of an environment variable"},
+        {"cambiarvar", "cambiarvar [-a| -e| -p] var valor	Changes the value of an environment variable"},
         {"uid", "uid [-get| -set] [-l] [id]     Shows or changes (if possible) the credential of the process executing the shell"},
         {NULL,        NULL}
 };
@@ -233,7 +234,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar uid \n");
+               "priority rederr entorno mostrarvar cambiarvar uid \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1164,7 +1165,7 @@ void cmd_entorno(int chop_number, char* chops[]) {
 
 int BuscarVariable(char *var, char *e[]) {
     int pos = 0;
-    char aux[MAX];
+    char aux[MAX] = "";
     strcpy(aux, var);
     strcat(aux, "=");
     while (e[pos] != NULL)
@@ -1176,23 +1177,60 @@ int BuscarVariable(char *var, char *e[]) {
     return (-1);
 }
 
-void cmd_mostrarvar(int chop_number, char *chops[]) {
+void mostrarvar_aux(char* var, char *nombre_ent, char *ent[]) {
     int pos;
+    printf("With %s: ", nombre_ent);
+    if ((pos = BuscarVariable(var, ent)) == -1) {
+        printf("Could not find var: %s\n", strerror(errno));
+    } else printf("%s (%p) @%p\n", ent[pos], ent[pos], &ent[pos]);
+}
+
+void cmd_mostrarvar(int chop_number, char *chops[]) {
     char *envV;
     if (chops[0] == NULL) MostrarEntorno(main3, "main arg3");
     else {
-        if ((pos = BuscarVariable(chops[0], main3)) == -1) {
-            perror("Could not show var");
+        mostrarvar_aux(chops[0], "main arg3", main3);
+        mostrarvar_aux(chops[0], "environ", environ);
+        if ((envV = getenv(chops[0])) == NULL) {
+            printf("With getenv: Could not find environment variable\n");
         } else {
-            printf("With environ: %s (%p) @%p\n", environ[pos], environ[pos], &environ[pos]);
-            printf("\tWith main arg3: %s (%p) @%p\n", main3[pos], main3[pos], &main3[pos]);
-            if ((envV = getenv(chops[0])) == NULL) {
-                printf("Could not find environment variable\n");
-            } else {
-                printf("\t\tWith getenv: %s (%p)\n", envV, envV);
-            }
+            printf("With getenv: %s (%p)\n", envV, envV);
         }
     }
+}
+
+int CambiarVariable(char * var, char * valor, char * e[]) {
+    int pos;
+    char * aux;
+    if ((pos = BuscarVariable(var, e)) == -1)
+        return (-1);
+    if ((aux = (char * ) malloc(strlen(var) + strlen(valor) + 2)) == NULL)
+        return -1;
+    strcpy(aux,var);
+    strcat(aux, "=");
+    strcat(aux, valor);
+    e[pos] = aux;
+    return (pos);
+}
+
+void cmd_cambiarvar(int chop_number, char *chops[]) {
+    char var_constructor[MAX]= "";
+    if (chop_number == 3) {
+        if (strcmp(chops[0], "-a") == 0) {
+            if (CambiarVariable(chops[1], chops[2], main3) == -1) perror("Impossible to change var");
+            return;
+        } else if (strcmp(chops[0], "-e") == 0) {
+            if (CambiarVariable(chops[1], chops[2], environ) == -1) perror("Impossible to change var");
+            return;
+        } else if (strcmp(chops[0], "-p") == 0) {
+            sprintf(var_constructor, "%s=%s", chops[1], chops[2]);
+            if (putenv(strdup(var_constructor)) != 0) {
+                perror("Cannot change / add var");
+            }
+            return;
+        }
+    }
+    printf("Usage: cambiarvar [-a | -e | -p] var valor\n");
 }
 
 char * NombreUsuario(uid_t uid) {
@@ -1273,6 +1311,7 @@ struct CMD c[] = {
         {"rederr", cmd_rederr},
         {"entorno", cmd_entorno},
         {"mostrarvar", cmd_mostrarvar},
+        {"cambiarvar", cmd_cambiarvar},
         {"uid", cmd_uid},
         {NULL,        NULL}
 };
