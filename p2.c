@@ -77,6 +77,7 @@ struct ayuda a[] = {
         {"rederr", "rederr [-reset] [fich]    Redirects the standard error of the shell"},
         {"entorno", "entorno [-environ | -addr]     Muestra el entorno del proceso"},
         {"mostrarvar", "Shows value and addresses of an environment variable"},
+        {"uid", "uid [-get| -set] [-l] [id]     Shows or changes (if possible) the credential of the process executing the shell"},
         {NULL,        NULL}
 };
 
@@ -232,7 +233,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar \n");
+               "priority rederr entorno mostrarvar uid \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1194,6 +1195,55 @@ void cmd_mostrarvar(int chop_number, char *chops[]) {
     }
 }
 
+char * NombreUsuario(uid_t uid) {
+    struct passwd * p;
+    if ((p = getpwuid(uid)) == NULL)
+        return (" ??????");
+    return p -> pw_name;
+}
+
+void MostrarUidsProceso() {
+    uid_t real = getuid(), efec = geteuid();
+    printf("Real credential: %d, (%s)\n", real, NombreUsuario(real));
+    printf("Effective credential: %d, (%s)\n", efec, NombreUsuario(efec));
+}
+
+uid_t UidUsuario(char * nombre) {
+    struct passwd * p;
+    if ((p = getpwnam(nombre)) == NULL)
+        return (uid_t) - 1;
+    return p -> pw_uid;
+}
+
+void CambiarUid(char * login, int l) {
+    uid_t uid;
+    int id;
+    if (!l) {
+        if ((id = atoi(login)) < 0) id = -1;
+        if ((uid_t) id == (uid_t) -1) {
+            printf("Invalid credential: %s\n", login);
+            return;
+        }
+    } else {
+        if ((uid = UidUsuario(login)) == (uid_t) - 1) {
+            printf("Invalid login: %s\n", login);
+            return;
+        }
+    }
+    if (setuid(uid) == -1)
+        printf("Impossible to change credential: %s\n", strerror(errno));
+}
+
+void cmd_uid(int chop_number, char *chops[]) {
+    int arg_l = 0;
+    if (chop_number <= 1) {
+        MostrarUidsProceso();
+    } else {
+        if (strcmp(chops[1], "-l") == 0) arg_l = 1;
+        CambiarUid(chops[1 + arg_l], arg_l);
+    }
+}
+
 struct CMD c[] = {
         {"autores",   cmd_autores},
         {"pid",       cmd_pid},
@@ -1224,6 +1274,7 @@ struct CMD c[] = {
         {"rederr", cmd_rederr},
         {"entorno", cmd_entorno},
         {"mostrarvar", cmd_mostrarvar},
+        {"uid", cmd_uid},
         {NULL,        NULL}
 };
 
