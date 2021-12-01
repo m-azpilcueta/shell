@@ -1217,10 +1217,9 @@ uid_t UidUsuario(char * nombre) {
 
 void CambiarUid(char * login, int l) {
     uid_t uid;
-    int id;
     if (!l) {
-        if ((id = atoi(login)) < 0) id = -1;
-        if ((uid_t) id == (uid_t) -1) {
+        if ((uid = (uid_t) atoi(login)) < 0) uid = (uid_t) -1;
+        if (uid == (uid_t) -1) {
             printf("Invalid credential: %s\n", login);
             return;
         }
