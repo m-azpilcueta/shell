@@ -1188,7 +1188,7 @@ void cmd_mostrarvar(int chop_number, char *chops[]) {
             if ((envV = getenv(chops[0])) == NULL) {
                 printf("Could not find environment variable\n");
             } else {
-                printf("\t\tWith getenv: %s (%p)\n", envV, &envV);
+                printf("\t\tWith getenv: %s (%p)\n", envV, envV);
             }
         }
     }
