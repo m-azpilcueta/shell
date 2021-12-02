@@ -79,6 +79,7 @@ struct ayuda a[] = {
         {"mostrarvar", "Shows value and addresses of an environment variable"},
         {"cambiarvar", "cambiarvar [-a| -e| -p] var valor	Changes the value of an environment variable"},
         {"uid", "uid [-get| -set] [-l] [id]     Shows or changes (if possible) the credential of the process executing the shell"},
+        {"fork", "fork      Makes a call to fork to create  a process"},
         {NULL,        NULL}
 };
 
@@ -234,7 +235,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid \n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1279,6 +1280,10 @@ void cmd_uid(int chop_number, char *chops[]) {
         if (strcmp(chops[1], "-l") == 0) arg_l = 1;
         CambiarUid(chops[1 + arg_l], arg_l);
     }
+
+    void cmd_fork(int chop_number, char *chops[]) {
+        
+    }
 }
 
 struct CMD c[] = {
@@ -1313,6 +1318,7 @@ struct CMD c[] = {
         {"mostrarvar", cmd_mostrarvar},
         {"cambiarvar", cmd_cambiarvar},
         {"uid", cmd_uid},
+        {"fork", cmd_fork},
         {NULL,        NULL}
 };
 
