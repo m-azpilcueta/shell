@@ -81,6 +81,7 @@ struct ayuda a[] = {
         {"uid", "uid [-get| -set] [-l] [id]     Shows or changes (if possible) the credential of the process executing the shell"},
         {"fork", "fork      Makes a call to fork to create  a process"},
         {"ejec", "ejec prog args....       Executes, without creating a process, prog with arguments"},
+        {"ejecpri", "ejecpri prio prog args....       Executes, without creating a process, prog with arguments and priority set to prio"},
         {NULL,        NULL}
 };
 
@@ -236,7 +237,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork ejec \n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1297,8 +1298,21 @@ void cmd_fork(int chop_number, char *chops[]) {
 void cmd_ejec(int chop_number, char *chops[]) {
     if (chops[0] == NULL) printf("Missing parameters\n");
     else {
-        if (execvp(chops[0], chops) == -1) {
+        if (execvp(chops[0], chops) == -1)
             perror("Could not execute command");
+    }
+}
+
+void cmd_ejecpri(int chop_number, char *chops[]) {
+    pid_t pid = getpid();
+    int priority;
+    if (chop_number < 2) printf("Missing parameters\n");
+    else {
+        priority = atoi(chops[0]);
+        if (setpriority(PRIO_PROCESS, pid, priority) == -1)
+            perror("Cannot set priority");
+        else {
+            if (execvp(chops[1], &chops[1]) == -1) perror("Could not execute command");
         }
     }
 }
@@ -1337,6 +1351,7 @@ struct CMD c[] = {
         {"uid", cmd_uid},
         {"fork", cmd_fork},
         {"ejec", cmd_ejec},
+        {"ejecpri", cmd_ejecpri},
         {NULL,        NULL}
 };
 
