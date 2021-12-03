@@ -1092,6 +1092,13 @@ void cmd_es(int chop_number, char *chops[]) {
 
 /* Lab Assignment 3 */
 
+int CambiarPrioridad(pid_t pid, int priority) {
+    if (setpriority(PRIO_PROCESS, pid, priority) == -1) {
+        perror("Cannot set priority");
+        return 0;
+    } else return 1;
+}
+
 void cmd_priority(int chop_number, char *chops[]) {
     int priority;
     int pid;
@@ -1110,9 +1117,7 @@ void cmd_priority(int chop_number, char *chops[]) {
         } else if (chop_number >= 2) {
             pid = atoi(chops[0]);
             priority = atoi(chops[1]);
-            if (setpriority(PRIO_PROCESS, pid, priority) == -1) {
-                perror("Cannot set priority");
-            }
+            CambiarPrioridad(pid, priority);
         }
     }
 }
@@ -1257,22 +1262,24 @@ uid_t UidUsuario(char * nombre) {
     return p -> pw_uid;
 }
 
-void CambiarUid(char * login, int l) {
+int CambiarUid(char * login, int l) {
     uid_t uid;
     if (!l) {
         if ((uid = (uid_t) atoi(login)) < 0) uid = (uid_t) -1;
         if (uid == (uid_t) -1) {
             printf("Invalid credential: %s\n", login);
-            return;
+            return 0;
         }
     } else {
         if ((uid = UidUsuario(login)) == (uid_t) - 1) {
             printf("Invalid login: %s\n", login);
-            return;
+            return 0;
         }
     }
-    if (setuid(uid) == -1)
+    if (setuid(uid) == -1) {
         printf("Impossible to change credential: %s\n", strerror(errno));
+        return 0;
+    } else return 1;
 }
 
 void cmd_uid(int chop_number, char *chops[]) {
@@ -1297,8 +1304,11 @@ void cmd_fork(int chop_number, char *chops[]) {
     }
 }
 
-void execute_command(char *command, char *args[]) {
-    if (execvp(command, args) == -1) perror("Could not execute command");
+int execute_command(char *command, char *args[]) {
+    if (execvp(command, args) == -1) {
+        perror("Could not execute command");
+        return 0;
+    } else return 1;
 }
 
 void cmd_ejec(int chop_number, char *chops[]) {
@@ -1314,9 +1324,8 @@ void cmd_ejecpri(int chop_number, char *chops[]) {
     if (chop_number < 2) printf("Missing parameters\n");
     else {
         priority = atoi(chops[0]);
-        if (setpriority(PRIO_PROCESS, pid, priority) == -1)
-            perror("Cannot set priority");
-        else execute_command(chops[1], &chops[1]);
+        if (CambiarPrioridad(pid, priority) == 0) return;
+        execute_command(chops[1], &chops[1]);
     }
 }
 
