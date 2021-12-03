@@ -1283,7 +1283,14 @@ void cmd_uid(int chop_number, char *chops[]) {
 }
 
 void cmd_fork(int chop_number, char *chops[]) {
-
+    pid_t pid;
+    if ((pid = fork()) == 0) {
+        printf("Child created. Child pid -> %d\n", getpid());
+    } else {
+        if (waitpid(pid, NULL, 0) != -1) {
+            perror("There was a problem suspending the execution of the parent");
+        }
+    }
 }
 
 struct CMD c[] = {
