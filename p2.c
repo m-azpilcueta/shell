@@ -1280,10 +1280,10 @@ void cmd_uid(int chop_number, char *chops[]) {
         if (strcmp(chops[1], "-l") == 0) arg_l = 1;
         CambiarUid(chops[1 + arg_l], arg_l);
     }
+}
 
-    void cmd_fork(int chop_number, char *chops[]) {
-        
-    }
+void cmd_fork(int chop_number, char *chops[]) {
+
 }
 
 struct CMD c[] = {
