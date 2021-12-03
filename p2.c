@@ -80,6 +80,7 @@ struct ayuda a[] = {
         {"cambiarvar", "cambiarvar [-a| -e| -p] var valor	Changes the value of an environment variable"},
         {"uid", "uid [-get| -set] [-l] [id]     Shows or changes (if possible) the credential of the process executing the shell"},
         {"fork", "fork      Makes a call to fork to create  a process"},
+        {"ejec", "ejec prog args....       Executes, without creating a process, prog with arguments"},
         {NULL,        NULL}
 };
 
@@ -235,7 +236,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork \n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1293,6 +1294,15 @@ void cmd_fork(int chop_number, char *chops[]) {
     }
 }
 
+void cmd_ejec(int chop_number, char *chops[]) {
+    if (chops[0] == NULL) printf("Missing parameters\n");
+    else {
+        if (execvp(chops[0], chops) == -1) {
+            perror("Could not execute command");
+        }
+    }
+}
+
 struct CMD c[] = {
         {"autores",   cmd_autores},
         {"pid",       cmd_pid},
@@ -1326,6 +1336,7 @@ struct CMD c[] = {
         {"cambiarvar", cmd_cambiarvar},
         {"uid", cmd_uid},
         {"fork", cmd_fork},
+        {"ejec", cmd_ejec},
         {NULL,        NULL}
 };
 
