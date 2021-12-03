@@ -82,6 +82,7 @@ struct ayuda a[] = {
         {"fork", "fork      Makes a call to fork to create  a process"},
         {"ejec", "ejec prog args....       Executes, without creating a process, prog with arguments"},
         {"ejecpri", "ejecpri prio prog args....       Executes, without creating a process, prog with arguments and priority set to prio"},
+        {"fg", "fg prog args...     Creates a process executed in foreground with arguments"},
         {NULL,        NULL}
 };
 
@@ -237,7 +238,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri \n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1287,19 +1288,23 @@ void cmd_uid(int chop_number, char *chops[]) {
 void cmd_fork(int chop_number, char *chops[]) {
     pid_t pid;
     if ((pid = fork()) == 0) {
-        printf("Child created. Child pid -> %d\n", getpid());
-    } else {
-        if (waitpid(pid, NULL, 0) != -1) {
+        printf("Child created. Child's pid -> %d\n", getpid());
+    } else if (pid == -1) perror("No child process was created");
+    else {
+        if (waitpid(pid, NULL, 0) == -1) {
             perror("There was a problem suspending the execution of the parent");
         }
     }
 }
 
+void execute_command(char *command, char *args[]) {
+    if (execvp(command, args) == -1) perror("Could not execute command");
+}
+
 void cmd_ejec(int chop_number, char *chops[]) {
     if (chops[0] == NULL) printf("Missing parameters\n");
     else {
-        if (execvp(chops[0], chops) == -1)
-            perror("Could not execute command");
+        execute_command(chops[0], chops);
     }
 }
 
@@ -1311,8 +1316,18 @@ void cmd_ejecpri(int chop_number, char *chops[]) {
         priority = atoi(chops[0]);
         if (setpriority(PRIO_PROCESS, pid, priority) == -1)
             perror("Cannot set priority");
+        else execute_command(chops[1], &chops[1]);
+    }
+}
+
+void cmd_fg(int chop_number, char *chops[]) {
+    pid_t pid;
+    if (chops[0] == NULL) printf("Missing parameters\n");
+    else {
+        if ((pid = fork()) == 0) execute_command(chops[0], chops);
+        else if (pid == -1) perror("No process was created");
         else {
-            if (execvp(chops[1], &chops[1]) == -1) perror("Could not execute command");
+            if (waitpid(pid, NULL, 0) == -1) perror("There was a problem suspending the parent execution");
         }
     }
 }
@@ -1352,6 +1367,7 @@ struct CMD c[] = {
         {"fork", cmd_fork},
         {"ejec", cmd_ejec},
         {"ejecpri", cmd_ejecpri},
+        {"fg", cmd_fg},
         {NULL,        NULL}
 };
 
