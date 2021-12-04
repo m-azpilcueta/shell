@@ -22,6 +22,7 @@
 #include <sys/resource.h>
 #include "list.h"
 #include "memlist.h"
+#include "proclist.h"
 
 #define MAX 1024
 #define RSIZE 4096
@@ -29,6 +30,7 @@
 
 tHist hist;
 tMemList memlist;
+struct Node* procListHead;
 int rec_counter = 0;
 int global1 = 1, global2 = 2, global3 = 3;
 int saved_stderr;
@@ -84,6 +86,7 @@ struct ayuda a[] = {
         {"ejecpri", "ejecpri prio prog args....       Executes, without creating a process, prog with arguments and priority set to prio"},
         {"fg", "fg prog args...     Creates a process executed in foreground with arguments"},
         {"fgpri", "fgpri prio prog args...      Creates a process executed in foreground with arguments and priority set to prio"},
+        {"back", "back prog args...     Creates a process executed in background with arguments"},
         {NULL,        NULL}
 };
 
@@ -239,7 +242,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri \n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -252,6 +255,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
 }
 
 void cmd_bye() {
+    clearProcList(&procListHead);
     deleteHistory(&hist);
     deleteMemlist(&memlist);
     exit(0);
@@ -1354,6 +1358,36 @@ void cmd_fgpri(int chop_number, char *chops[]) {
     else execute_foreground(chops[1], chops, 1);
 }
 
+void execute_background(char * command, char *args[], int isPri) {
+    pid_t pid;
+    if ((pid = fork()) == 0) {
+        if (isPri) {
+            if (CambiarPrioridad(pid, atoi(args[0])) == 0) cmd_bye();
+        }
+        if (execute_command(command, &args[0 + isPri]) == 0) cmd_bye();
+    } else if (pid == -1) perror("No process was created");
+    else {
+        data proc;
+        proc.pid = pid;
+        proc.priority = getpriority(PRIO_PROCESS, pid);
+        strcpy(proc.user, NombreUsuario(getuid()));
+        *(args) = *(args + isPri);
+        while(*(args) != NULL) {
+            strcpy(proc.command, *(args));
+            strcat(proc.command, " ");
+            *(args) = *(args + 1);
+        }
+        proc.time = time(NULL);
+        strcpy(proc.state, "Running");
+        if (appendProc(&procListHead, proc) == 0) printf("Could not insert proc in the list\n");
+    }
+}
+
+void cmd_back(int chop_number, char *chops[]) {
+    if (chops[0] == NULL) printf("Missing parameters\n");
+    else execute_background(chops[0], chops, 0);
+}
+
 struct CMD c[] = {
         {"autores",   cmd_autores},
         {"pid",       cmd_pid},
@@ -1391,6 +1425,7 @@ struct CMD c[] = {
         {"ejecpri", cmd_ejecpri},
         {"fg", cmd_fg},
         {"fgpri", cmd_fgpri},
+        {"back", cmd_back},
         {NULL,        NULL}
 };
 
@@ -1417,6 +1452,7 @@ int main(int argc, char *argv[], char **envp) {
     int chop_number;
     main3 = envp;
 
+    procListHead = NULL;
     createEmptyHistory(&hist);
     createEmptyMemlist(&memlist);
     while (1) {
