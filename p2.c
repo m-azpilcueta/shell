@@ -83,6 +83,7 @@ struct ayuda a[] = {
         {"ejec", "ejec prog args....       Executes, without creating a process, prog with arguments"},
         {"ejecpri", "ejecpri prio prog args....       Executes, without creating a process, prog with arguments and priority set to prio"},
         {"fg", "fg prog args...     Creates a process executed in foreground with arguments"},
+        {"fgpri", "fgpri prio prog args...      Creates a process executed in foreground with arguments and priority set to prio"},
         {NULL,        NULL}
 };
 
@@ -238,7 +239,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg \n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1329,16 +1330,28 @@ void cmd_ejecpri(int chop_number, char *chops[]) {
     }
 }
 
-void cmd_fg(int chop_number, char *chops[]) {
+void execute_foreground(char *command, char *args[], int isPri) {
     pid_t pid;
-    if (chops[0] == NULL) printf("Missing parameters\n");
-    else {
-        if ((pid = fork()) == 0) execute_command(chops[0], chops);
-        else if (pid == -1) perror("No process was created");
-        else {
-            if (waitpid(pid, NULL, 0) == -1) perror("There was a problem suspending the parent execution");
+    if ((pid = fork()) == 0) {
+        if (isPri) {
+            if (CambiarPrioridad(pid, atoi(args[0])) == 0) cmd_bye();
         }
+        if (execute_command(command, &args[0 + isPri]) == 0) cmd_bye();
     }
+    else if (pid == -1) perror("No process was created");
+    else {
+        if (waitpid(pid, NULL, 0) == -1) perror("There was a problem suspending the parent execution");
+    }
+}
+
+void cmd_fg(int chop_number, char *chops[]) {
+    if (chops[0] == NULL) printf("Missing parameters\n");
+    else execute_foreground(chops[0], chops, 0);
+}
+
+void cmd_fgpri(int chop_number, char *chops[]) {
+    if (chop_number < 2) printf("Missing parameters\n");
+    else execute_foreground(chops[1], chops, 1);
 }
 
 struct CMD c[] = {
@@ -1377,6 +1390,7 @@ struct CMD c[] = {
         {"ejec", cmd_ejec},
         {"ejecpri", cmd_ejecpri},
         {"fg", cmd_fg},
+        {"fgpri", cmd_fgpri},
         {NULL,        NULL}
 };
 
