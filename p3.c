@@ -30,7 +30,7 @@
 
 tHist hist;
 tMemList memlist;
-struct Node* procListHead;
+tProcList proclist;
 int rec_counter = 0;
 int global1 = 1, global2 = 2, global3 = 3;
 int saved_stderr;
@@ -255,7 +255,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
 }
 
 void cmd_bye() {
-    clearProcList(&procListHead);
+    clearProcList(&proclist);
     deleteHistory(&hist);
     deleteMemlist(&memlist);
     exit(0);
@@ -1379,7 +1379,7 @@ void execute_background(char * command, char *args[], int isPri) {
         }
         proc.time = time(NULL);
         strcpy(proc.state, "Running");
-        if (appendProc(&procListHead, proc) == 0) printf("Could not insert proc in the list\n");
+        if (insertProc(proc, &proclist) == 0) printf("Could not insert process in the list\n");
     }
 }
 
@@ -1452,7 +1452,7 @@ int main(int argc, char *argv[], char **envp) {
     int chop_number;
     main3 = envp;
 
-    procListHead = NULL;
+    createProcList(&proclist);
     createEmptyHistory(&hist);
     createEmptyMemlist(&memlist);
     while (1) {

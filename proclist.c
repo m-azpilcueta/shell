@@ -5,38 +5,29 @@
 
 #include "proclist.h"
 
-int appendProc(struct Node ** head, data values) {
-    struct Node * insert = (struct Node *) malloc(sizeof(struct Node));
-    struct Node * last = *head;
-    if (insert == NULL) {
-        printf("Could not allocate memory\n");
-        return 0;
-    } else {
-        insert->values = values;
-        insert->next = NULL;
-        if (*head == NULL) {
-            insert->previous = NULL;
-            *head = insert;
+void createProcList(tProcList* list) {
+    list->last = -1;
+}
+
+int insertProc(data proc, tProcList* list) {
+    if (list->last == MAX_PROCL - 1) return 0;
+    else {
+        data * insert = (data *) malloc(sizeof(data));
+        if (insert == NULL) {
+            printf("Could not allocate memory\n");
+            return 0;
+        } else {
+            *insert = proc;
+            list->last++;
+            list->data[list->last] = insert;
             return 1;
         }
-        while(last->next != NULL) {
-            last = last->next;
-        }
-        last->next = insert;
-        insert->previous = last;
-        return 1;
     }
 }
 
-void clearProcList(struct Node ** head) {
-    if (*head == NULL) return;
-    else {
-        struct Node *it = *head;
-        while(it != NULL) {
-            struct Node *tmp = it;
-            it = it->next;
-            *head = it;
-            free(tmp);
-        }
+void clearProcList(tProcList* list) {
+    for (int i = 0; i <= list->last; i++) {
+        free(list->data[i]);
     }
+    list->last = -1;
 }

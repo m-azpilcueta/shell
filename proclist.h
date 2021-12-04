@@ -1,8 +1,13 @@
 #ifndef SHELL_PROCLIST_H
 #define SHELL_PROCLIST_H
 
+#define MAX_PROCL 4096
+
+#include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+typedef int tPos;
 
 typedef struct {
     pid_t pid;
@@ -14,12 +19,13 @@ typedef struct {
     int returned_value;
 } data;
 
-struct Node {
-    struct Node * previous;
-    data values;
-    struct Node * next;
-};
+typedef struct {
+    data *data[MAX_PROCL];
+    tPos last;
+} tProcList;
 
-int appendProc(struct Node ** head, data values);
-void clearProcList(struct Node ** head);
+void createProcList(tProcList* list);
+int insertProc(data proc, tProcList* list);
+void clearProcList(tProcList* list);
+
 #endif //SHELL_PROCLIST_H
