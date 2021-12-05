@@ -88,6 +88,7 @@ struct ayuda a[] = {
         {"fgpri", "fgpri prio prog args...      Creates a process executed in foreground with arguments and priority set to prio"},
         {"back", "back prog args...     Creates a process executed in background with arguments"},
         {"backpri", "backpri prio prog args...      Creates a process executed in background with arguments and priority set to prio"},
+        {"ejecas", "ejecas user prog args..     Executes, without creating a process and with user as user, prog with arguments"},
         {NULL,        NULL}
 };
 
@@ -243,7 +244,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri \n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri ejecas \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1394,6 +1395,14 @@ void cmd_backpri(int chop_number, char *chops[]) {
     else execute_background(chops[1], chops, chop_number, 1);
 }
 
+void cmd_ejecas(int chop_number, char *chops[]) {
+    if (chop_number < 2) printf("Missing parameters\n");
+    else {
+        if (CambiarUid(chops[0], 1) == 0) return;
+        else execute_command(chops[1], &chops[1]);
+    }
+}
+
 struct CMD c[] = {
         {"autores",   cmd_autores},
         {"pid",       cmd_pid},
@@ -1433,6 +1442,7 @@ struct CMD c[] = {
         {"fgpri", cmd_fgpri},
         {"back", cmd_back},
         {"backpri", cmd_backpri},
+        {"ejecas", cmd_ejecas},
         {NULL,        NULL}
 };
 
