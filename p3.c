@@ -87,6 +87,7 @@ struct ayuda a[] = {
         {"fg", "fg prog args...     Creates a process executed in foreground with arguments"},
         {"fgpri", "fgpri prio prog args...      Creates a process executed in foreground with arguments and priority set to prio"},
         {"back", "back prog args...     Creates a process executed in background with arguments"},
+        {"backpri", "backpri prio prog args...      Creates a process executed in background with arguments and priority set to prio"},
         {NULL,        NULL}
 };
 
@@ -242,7 +243,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back \n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1358,8 +1359,9 @@ void cmd_fgpri(int chop_number, char *chops[]) {
     else execute_foreground(chops[1], chops, 1);
 }
 
-void execute_background(char * command, char *args[], int isPri) {
+void execute_background(char * command, char *args[], int args_len, int isPri) {
     pid_t pid;
+    int counter = 0 + isPri;
     if ((pid = fork()) == 0) {
         if (isPri) {
             if (CambiarPrioridad(pid, atoi(args[0])) == 0) cmd_bye();
@@ -1371,11 +1373,10 @@ void execute_background(char * command, char *args[], int isPri) {
         proc.pid = pid;
         proc.priority = getpriority(PRIO_PROCESS, pid);
         strcpy(proc.user, NombreUsuario(getuid()));
-        *(args) = *(args + isPri);
-        while(*(args) != NULL) {
-            strcpy(proc.command, *(args));
+        while(counter < args_len) {
+            strcpy(proc.command, args[counter]);
             strcat(proc.command, " ");
-            *(args) = *(args + 1);
+            counter++;
         }
         proc.time = time(NULL);
         strcpy(proc.state, "Running");
@@ -1385,7 +1386,12 @@ void execute_background(char * command, char *args[], int isPri) {
 
 void cmd_back(int chop_number, char *chops[]) {
     if (chops[0] == NULL) printf("Missing parameters\n");
-    else execute_background(chops[0], chops, 0);
+    else execute_background(chops[0], chops, chop_number, 0);
+}
+
+void cmd_backpri(int chop_number, char *chops[]) {
+    if (chop_number < 2) printf("Missing parameters\n");
+    else execute_background(chops[1], chops, chop_number, 1);
 }
 
 struct CMD c[] = {
@@ -1426,6 +1432,7 @@ struct CMD c[] = {
         {"fg", cmd_fg},
         {"fgpri", cmd_fgpri},
         {"back", cmd_back},
+        {"backpri", cmd_backpri},
         {NULL,        NULL}
 };
 
