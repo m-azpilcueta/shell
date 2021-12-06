@@ -90,6 +90,7 @@ struct ayuda a[] = {
         {"backpri", "backpri prio prog args...      Creates a process executed in background with arguments and priority set to prio"},
         {"ejecas", "ejecas user prog args..     Executes, without creating a process and with user as user, prog with arguments"},
         {"fgas", "fgas login prog args...      Creates a process prog executed in foreground, as user login, with arguments args"},
+        {"bgas", "bgas login prog args...      Creates a process prog executed in background, as user login, with arguments args"},
         {NULL,        NULL}
 };
 
@@ -245,7 +246,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri ejecas fgas \n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri ejecas fgas bgas \n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1364,14 +1365,17 @@ void cmd_fgpri(int chop_number, char *chops[]) {
     else execute_foreground(chops[1], chops, 1, 0);
 }
 
-void execute_background(char * command, char *args[], int args_len, int isPri) {
+void execute_background(char * command, char *args[], int args_len, int isPri, int isLogin) {
     pid_t pid;
-    int counter = 0 + isPri;
+    int counter = 0 + isPri + isLogin;
     if ((pid = fork()) == 0) {
+        if (isLogin) {
+            if (CambiarUid(args[0], 1) == 0) cmd_bye();
+        }
         if (isPri) {
             if (CambiarPrioridad(pid, atoi(args[0])) == 0) cmd_bye();
         }
-        if (execute_command(command, &args[0 + isPri]) == 0) cmd_bye();
+        if (execute_command(command, &args[0 + isPri + isLogin]) == 0) cmd_bye();
     } else if (pid == -1) perror("No process was created");
     else {
         data proc;
@@ -1391,12 +1395,12 @@ void execute_background(char * command, char *args[], int args_len, int isPri) {
 
 void cmd_back(int chop_number, char *chops[]) {
     if (chops[0] == NULL) printf("Missing parameters\n");
-    else execute_background(chops[0], chops, chop_number, 0);
+    else execute_background(chops[0], chops, chop_number, 0, 0);
 }
 
 void cmd_backpri(int chop_number, char *chops[]) {
     if (chop_number < 2) printf("Missing parameters\n");
-    else execute_background(chops[1], chops, chop_number, 1);
+    else execute_background(chops[1], chops, chop_number, 1, 0);
 }
 
 void cmd_ejecas(int chop_number, char *chops[]) {
@@ -1410,6 +1414,11 @@ void cmd_ejecas(int chop_number, char *chops[]) {
 void cmd_fgas(int chop_number, char *chops[]) {
     if (chop_number < 2) printf("Missing parameters\n");
     else execute_foreground(chops[1], chops, 0, 1);
+}
+
+void cmd_bgas(int chop_number, char *chops[]) {
+    if (chop_number < 2) printf("Missing parameters\n");
+    else execute_background(chops[1], chops, chop_number, 0, 1);
 }
 
 struct CMD c[] = {
@@ -1453,6 +1462,7 @@ struct CMD c[] = {
         {"backpri", cmd_backpri},
         {"ejecas", cmd_ejecas},
         {"fgas", cmd_fgas},
+        {"bgas", cmd_bgas},
         {NULL,        NULL}
 };
 
