@@ -6,6 +6,12 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/resource.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <time.h>
+
+#include <signal.h>
 
 typedef int tPos;
 
@@ -24,8 +30,10 @@ typedef struct {
     tPos last;
 } tProcList;
 
-void createProcList(tProcList* list);
-int insertProc(data proc, tProcList* list);
-void clearProcList(tProcList* list);
+void createProcList(tProcList *list);
+int insertProc(data proc, tProcList *list);
+void clearProcList(tProcList *list);
+void updateProcList(tProcList *list);
+void showProcList(tProcList list);
 
 #endif //SHELL_PROCLIST_H

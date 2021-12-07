@@ -91,6 +91,7 @@ struct ayuda a[] = {
         {"ejecas", "ejecas user prog args..     Executes, without creating a process and with user as user, prog with arguments"},
         {"fgas", "fgas login prog args...      Creates a process prog executed in foreground, as user login, with arguments args"},
         {"bgas", "bgas login prog args...      Creates a process prog executed in background, as user login, with arguments args"},
+        {"listjobs", "listjobs      Lists processes executing in background"},
         {NULL,        NULL}
 };
 
@@ -246,7 +247,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri ejecas fgas bgas \n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri ejecas fgas bgas listjobs\n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -256,6 +257,13 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         }
         printf("%s not found\n", chops[0]);
     }
+}
+
+void exit_error(int n) {
+    clearProcList(&proclist);
+    deleteHistory(&hist);
+    deleteMemlist(&memlist);
+    exit(n);
 }
 
 void cmd_bye() {
@@ -1254,7 +1262,7 @@ void cmd_cambiarvar(int chop_number, char *chops[]) {
 char * NombreUsuario(uid_t uid) {
     struct passwd * p;
     if ((p = getpwuid(uid)) == NULL)
-        return (" ??????");
+        return ("??????");
     return p -> pw_name;
 }
 
@@ -1304,6 +1312,7 @@ void cmd_uid(int chop_number, char *chops[]) {
 void cmd_fork(int chop_number, char *chops[]) {
     pid_t pid;
     if ((pid = fork()) == 0) {
+        clearProcList(&proclist);
         printf("Child created. Child's pid -> %d\n", getpid());
     } else if (pid == -1) perror("No child process was created");
     else {
@@ -1342,12 +1351,12 @@ void execute_foreground(char *command, char *args[], int isPri, int isLogin) {
     pid_t pid;
     if ((pid = fork()) == 0) {
         if (isLogin) {
-            if (CambiarUid(args[0], 1) == 0) cmd_bye();
+            if (CambiarUid(args[0], 1) == 0) exit_error(255);
         }
         if (isPri) {
-            if (CambiarPrioridad(pid, atoi(args[0])) == 0) cmd_bye();
+            if (CambiarPrioridad(pid, atoi(args[0])) == 0) exit_error(255);
         }
-        if (execute_command(command, &args[0 + isPri + isLogin]) == 0) cmd_bye();
+        if (execute_command(command, &args[0 + isPri + isLogin]) == 0) exit_error(EXIT_FAILURE);
     }
     else if (pid == -1) perror("No process was created");
     else {
@@ -1370,20 +1379,21 @@ void execute_background(char * command, char *args[], int args_len, int isPri, i
     int counter = 0 + isPri + isLogin;
     if ((pid = fork()) == 0) {
         if (isLogin) {
-            if (CambiarUid(args[0], 1) == 0) cmd_bye();
+            if (CambiarUid(args[0], 1) == 0) exit_error(255);
         }
         if (isPri) {
-            if (CambiarPrioridad(pid, atoi(args[0])) == 0) cmd_bye();
+            if (CambiarPrioridad(pid, atoi(args[0])) == 0) exit_error(255);
         }
-        if (execute_command(command, &args[0 + isPri + isLogin]) == 0) cmd_bye();
+        if (execute_command(command, &args[0 + isPri + isLogin]) == 0) exit_error(EXIT_FAILURE);
     } else if (pid == -1) perror("No process was created");
     else {
         data proc;
         proc.pid = pid;
         proc.priority = getpriority(PRIO_PROCESS, pid);
-        strcpy(proc.user, NombreUsuario(getuid()));
+        strcpy(proc.user, NombreUsuario(isLogin ? UidUsuario(args[0]) : geteuid()));
+        strcpy(proc.command, "");
         while(counter < args_len) {
-            strcpy(proc.command, args[counter]);
+            strcat(proc.command, args[counter]);
             strcat(proc.command, " ");
             counter++;
         }
@@ -1419,6 +1429,11 @@ void cmd_fgas(int chop_number, char *chops[]) {
 void cmd_bgas(int chop_number, char *chops[]) {
     if (chop_number < 2) printf("Missing parameters\n");
     else execute_background(chops[1], chops, chop_number, 0, 1);
+}
+
+void cmd_listjobs(int chop_number, char *chops[]) {
+    updateProcList(&proclist);
+    showProcList(proclist);
 }
 
 struct CMD c[] = {
@@ -1463,6 +1478,7 @@ struct CMD c[] = {
         {"ejecas", cmd_ejecas},
         {"fgas", cmd_fgas},
         {"bgas", cmd_bgas},
+        {"listjobs", cmd_listjobs},
         {NULL,        NULL}
 };
 
