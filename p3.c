@@ -92,6 +92,7 @@ struct ayuda a[] = {
         {"fgas", "fgas login prog args...      Creates a process prog executed in foreground, as user login, with arguments args"},
         {"bgas", "bgas login prog args...      Creates a process prog executed in background, as user login, with arguments args"},
         {"listjobs", "listjobs      Lists processes executing in background"},
+        {"job", "job [-fg] pid      Shows information about process pid. -fg brings it to foreground"},
         {NULL,        NULL}
 };
 
@@ -247,7 +248,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri ejecas fgas bgas listjobs\n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri ejecas fgas bgas listjobs job\n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1431,9 +1432,50 @@ void cmd_bgas(int chop_number, char *chops[]) {
     else execute_background(chops[1], chops, chop_number, 0, 1);
 }
 
-void cmd_listjobs(int chop_number, char *chops[]) {
+void cmd_listjobs() {
     updateProcList(&proclist);
     showProcList(proclist);
+}
+
+void cmd_job(int chop_number, char * chops[]) {
+    pid_t pid;
+    tPos pos;
+    data* proc;
+    int fg = 0, state;
+    if (chops[0] == NULL) cmd_listjobs();
+    else {
+        if (strcmp(chops[0], "-fg") == 0) {
+            if (chop_number < 2) {
+                cmd_listjobs();
+                return;
+            }
+            fg = 1;
+        }
+        pid = (pid_t) atoi(chops[0 + fg]);
+        updateProcList(&proclist);
+        if ((pos = findProc(pid, proclist)) == -1) {
+            showProcList(proclist);
+            return;
+        } else {
+            proc = getProc(pos, proclist);
+            if (fg) {
+                if (strcmp(proc->state, "Terminated By Signal") == 0 || strcmp(proc->state, "Terminated Normally") == 0 ) {
+                    printf("Process %d is already finished\n", pid);
+                } else {
+                    if (waitpid(pid, &state, 0) == -1) perror("There was a problem bringing to foreground");
+                    else {
+                        if (WIFEXITED(state)) {
+                            printf("Process %d terminated normally with value %d\n", pid, WEXITSTATUS(state));
+                            if (removeProcByPid(pid, &proclist) == 0) printf("Could not remove process %d from the list\n", pid);
+                        } else if (WIFSIGNALED(state)) {
+                            printf("Process %d terminated by signal %s\n", pid, NombreSenal(WTERMSIG(state)));
+                            if (removeProcByPid(pid, &proclist) == 0) printf("Could not remove process %d from the list\n", pid);
+                        }
+                    }
+                }
+            } else printProc(*proc);
+        }
+    }
 }
 
 struct CMD c[] = {
@@ -1479,6 +1521,7 @@ struct CMD c[] = {
         {"fgas", cmd_fgas},
         {"bgas", cmd_bgas},
         {"listjobs", cmd_listjobs},
+        {"job", cmd_job},
         {NULL,        NULL}
 };
 

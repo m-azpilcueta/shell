@@ -32,8 +32,13 @@ typedef struct {
 
 void createProcList(tProcList *list);
 int insertProc(data proc, tProcList *list);
+int findProc(pid_t pid, tProcList list);
+data* getProc(tPos pos, tProcList list);
+int removeProcByPid(pid_t pid, tProcList* list);
 void clearProcList(tProcList *list);
 void updateProcList(tProcList *list);
+void printProc(data proc);
 void showProcList(tProcList list);
+char * NombreSenal(int sen);
 
 #endif //SHELL_PROCLIST_H

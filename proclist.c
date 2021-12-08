@@ -129,6 +129,39 @@ void updateProc(data* proc) {
     }
 }
 
+int findProc(pid_t pid, tProcList list) {
+    for (int i = 0; i <= list.last; i++) {
+        if (list.data[i]->pid == pid) return i;
+    }
+    return -1;
+}
+
+data* getProc(tPos pos, tProcList list) {
+    return list.data[pos];
+}
+
+int removeProcByPid(pid_t pid, tProcList* list) {
+    int found = 0;
+    if (list->last == -1) return 0;
+    else {
+        for (int i = 0; i <= list->last; i++) {
+            if (!found) {
+                if (pid == list->data[i]->pid) {
+                    data *tmp = list->data[i];
+                    free(tmp);
+                    found = 1;
+                }
+            }
+            if (found) list->data[i] = list->data[i+1];
+        }
+        if (found) {
+            list->last--;
+            return 1;
+        }
+        return 0;
+    }
+}
+
 void updateProcList(tProcList* list) {
     for (int i = 0; i <= list->last; i++) {
         updateProc(list->data[i]);
@@ -144,17 +177,21 @@ char * NombreSenal(int sen) /*devuelve el nombre senal a partir de la senal*/ {
     return ("SIGUNKNOWN");
 }
 
-void showProcList(tProcList list) {
+void printProc(data proc) {
     struct tm *info;
     char buffer[50];
     char senal[50];
+    info = localtime(&proc.time);
+    strftime(buffer, sizeof(buffer),"%Y/%m/%d %T", info);
+    strcpy(senal, NombreSenal(proc.returned_value));
+    if ((strcmp(proc.state, "Terminated By Signal") != 0) & (strcmp(proc.state, "Stopped") != 0))
+        printf(" %d priority=%d %s %s %s %s (%d)\n", proc.pid, proc.priority, proc.user, proc.command, buffer, proc.state, proc.returned_value);
+    else
+        printf(" %d priority=%d %s %s %s %s (%s)\n", proc.pid, proc.priority, proc.user, proc.command, buffer, proc.state, senal);
+}
+
+void showProcList(tProcList list) {
     for (int i = 0; i <= list.last; i++) {
-        info = localtime(&list.data[i]->time);
-        strftime(buffer,sizeof(buffer),"%Y/%m/%d %T",info);
-        strcpy(senal, NombreSenal(list.data[i]->returned_value));
-        if ((strcmp(list.data[i]->state, "Terminated By Signal") != 0) & (strcmp(list.data[i]->state, "Stopped") != 0))
-            printf(" %d priority=%d %s %s %s %s (%d)\n", list.data[i]->pid, list.data[i]->priority, list.data[i]->user, list.data[i]->command, buffer, list.data[i]->state, list.data[i]->returned_value);
-        else
-            printf(" %d priority=%d %s %s %s %s (%s)\n", list.data[i]->pid, list.data[i]->priority, list.data[i]->user, list.data[i]->command, buffer, list.data[i]->state, senal);
+        printProc(*list.data[i]);
     }
 }
