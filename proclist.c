@@ -180,14 +180,15 @@ char * NombreSenal(int sen) /*devuelve el nombre senal a partir de la senal*/ {
 void printProc(data proc) {
     struct tm *info;
     char buffer[50] = "";
-    char senal[50] = "";
     info = localtime(&proc.time);
     strftime(buffer, sizeof(buffer),"%Y/%m/%d %T", info);
-    strcpy(senal, NombreSenal(proc.returned_value));
     if ((strcmp(proc.state, "Terminated By Signal") != 0) & (strcmp(proc.state, "Stopped") != 0))
         printf(" %d priority=%d %s %s %s %s (%d)\n", proc.pid, proc.priority, proc.user, proc.command, buffer, proc.state, proc.returned_value);
-    else
+    else {
+        char senal[50] = "";
+        strcpy(senal, NombreSenal(proc.returned_value));
         printf(" %d priority=%d %s %s %s %s (%s)\n", proc.pid, proc.priority, proc.user, proc.command, buffer, proc.state, senal);
+    }
 }
 
 void showProcList(tProcList list) {

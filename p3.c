@@ -1498,6 +1498,15 @@ void cmd_borrarjobs(int chop_number, char *chops[]) {
     }
 }
 
+void execute_prog(int chop_number, char *chops[]) {
+    if (strcmp(chops[chop_number - 1], "&") == 0) {
+        chops[chop_number - 1] = NULL;
+        execute_background(chops[0], chops, chop_number - 1, 0, 0);
+    } else {
+        execute_foreground(chops[0], chops, 0, 0);
+    }
+}
+
 struct CMD c[] = {
         {"autores",   cmd_autores},
         {"pid",       cmd_pid},
@@ -1560,7 +1569,7 @@ void process_input(int chop_number, char *chops[]) {
             return;
         }
     }
-    printf("Command '%s' not found\n", chops[0]);
+    execute_prog(chop_number, chops);
 }
 
 int main(int argc, char *argv[], char **envp) {
