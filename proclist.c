@@ -179,8 +179,8 @@ char * NombreSenal(int sen) /*devuelve el nombre senal a partir de la senal*/ {
 
 void printProc(data proc) {
     struct tm *info;
-    char buffer[50];
-    char senal[50];
+    char buffer[50] = "";
+    char senal[50] = "";
     info = localtime(&proc.time);
     strftime(buffer, sizeof(buffer),"%Y/%m/%d %T", info);
     strcpy(senal, NombreSenal(proc.returned_value));
@@ -193,5 +193,34 @@ void printProc(data proc) {
 void showProcList(tProcList list) {
     for (int i = 0; i <= list.last; i++) {
         printProc(*list.data[i]);
+    }
+}
+
+int checkData(char *rem_type, data proc) {
+    if (strcmp(rem_type, "-all") == 0) {
+        if ((strcmp(proc.state, "Terminated By Signal") == 0) | (strcmp(proc.state, "Terminated Normally") == 0)) return 1;
+        return 0;
+    } else {
+        if (strcmp(rem_type, proc.state) == 0) return 1;
+        return 0;
+    }
+}
+
+int removeProcs(char *rem_type, tProcList* list) {
+    int counter = 0, borrados = 0;
+    if (list->last == -1) return 0;
+    else {
+        while (counter <= list->last) {
+            if (borrados) list->data[counter] = list->data[counter + borrados];
+            if (checkData(rem_type, *list->data[counter])) {
+                data * tmp = list->data[counter];
+                free(tmp);
+                list->data[counter] = list->data[counter+1];
+                list->last--;
+                borrados++;
+            } else counter++;
+        }
+        if (borrados) return 1;
+        else return 0;
     }
 }

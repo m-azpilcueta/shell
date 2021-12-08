@@ -40,5 +40,6 @@ void updateProcList(tProcList *list);
 void printProc(data proc);
 void showProcList(tProcList list);
 char * NombreSenal(int sen);
+int removeProcs(char *rem_type, tProcList* list);
 
 #endif //SHELL_PROCLIST_H

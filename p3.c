@@ -93,6 +93,7 @@ struct ayuda a[] = {
         {"bgas", "bgas login prog args...      Creates a process prog executed in background, as user login, with arguments args"},
         {"listjobs", "listjobs      Lists processes executing in background"},
         {"job", "job [-fg] pid      Shows information about process pid. -fg brings it to foreground"},
+        {"borrarjobs", "borrarjobs [-term][-sig]       Remove the process terminated normally or terminated by signal from the list of background processes"},
         {NULL,        NULL}
 };
 
@@ -248,7 +249,7 @@ void cmd_ayuda(int chop_number, char *chops[]) {
         printf("'ayuda cmd' where cmd is one of the following commands:\n"
                "fin salir bye fecha pid autores hist comando carpeta infosis ayuda crear borrar borrarrec listfich listdir "
                "recursiva e-s volcarmem llenarmem dealloc malloc mmap shared memoria "
-               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri ejecas fgas bgas listjobs job\n");
+               "priority rederr entorno mostrarvar cambiarvar uid fork ejec ejecpri fg fgpri back backpri ejecas fgas bgas listjobs job borrarjobs\n");
     } else {
         for (int i = 0; a[i].command != NULL; i++) {
             if (strcmp(chops[0], a[i].command) == 0) {
@@ -1478,6 +1479,25 @@ void cmd_job(int chop_number, char * chops[]) {
     }
 }
 
+void cmd_borrarjobs(int chop_number, char *chops[]) {
+    if (chops[0] == NULL) cmd_listjobs();
+    else {
+        if (strcmp(chops[0], "-clear") == 0) {
+            updateProcList(&proclist);
+            clearProcList(&proclist);
+        } else if (strcmp(chops[0], "-term") == 0) {
+            updateProcList(&proclist);
+            if (removeProcs("Terminated Normally", &proclist) == 0) cmd_listjobs();
+        } else if (strcmp(chops[0], "-sig") == 0) {
+            updateProcList(&proclist);
+            if (removeProcs("Terminated By Signal", &proclist) == 0) cmd_listjobs();
+        } else if (strcmp(chops[0], "-all") == 0) {
+            updateProcList(&proclist);
+            if (removeProcs("-all", &proclist) == 0) cmd_listjobs();
+        } else cmd_listjobs();
+    }
+}
+
 struct CMD c[] = {
         {"autores",   cmd_autores},
         {"pid",       cmd_pid},
@@ -1522,6 +1542,7 @@ struct CMD c[] = {
         {"bgas", cmd_bgas},
         {"listjobs", cmd_listjobs},
         {"job", cmd_job},
+        {"borrarjobs", cmd_borrarjobs},
         {NULL,        NULL}
 };
 
