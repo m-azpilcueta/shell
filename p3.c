@@ -1157,7 +1157,6 @@ void cmd_rederr(int chop_number, char* chops[]) {
         if (dup2(saved_stderr, STDERR_FILENO) == -1) {
             perror("Could not reset standard error");
         }
-        close(saved_stderr);
     } else {
         if ((fd = open(chops[0], O_CREAT | O_EXCL | O_WRONLY, 0744)) == -1) {
             perror("Could not open file to redirect");
