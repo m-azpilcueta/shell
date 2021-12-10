@@ -1306,7 +1306,9 @@ void cmd_uid(int chop_number, char *chops[]) {
         MostrarUidsProceso();
     } else {
         if (strcmp(chops[1], "-l") == 0) arg_l = 1;
-        CambiarUid(chops[1 + arg_l], arg_l);
+        if (chop_number >= 2 + arg_l)
+            CambiarUid(chops[1 + arg_l], arg_l);
+        else MostrarUidsProceso();
     }
 }
 
