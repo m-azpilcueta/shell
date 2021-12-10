@@ -1393,7 +1393,7 @@ void execute_background(char * command, char *args[], int args_len, int isPri, i
         data proc;
         proc.pid = pid;
         proc.priority = getpriority(PRIO_PROCESS, pid);
-        strcpy(proc.user, NombreUsuario(isLogin ? UidUsuario(args[0]) : geteuid()));
+        strcpy(proc.user, NombreUsuario(isLogin ? UidUsuario(args[0]) : getuid()));
         strcpy(proc.command, "");
         while(counter < args_len) {
             strcat(proc.command, args[counter]);
